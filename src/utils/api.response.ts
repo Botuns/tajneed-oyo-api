@@ -1,8 +1,8 @@
-// src/utils/apiResponse.ts
 export enum ResponseStatus {
     SUCCESS = 'success',
     ERROR = 'error',
     VALIDATION_ERROR = 'validation_error'
+    
 }
 
 export interface BaseResponse<T = any> {
@@ -16,7 +16,7 @@ export interface BaseResponse<T = any> {
 
 export class ApiResponse {
     /**
-     * Create a successful response
+     * Creates a successful response
      * @param data - The response payload
      * @param message - Optional success message
      */
