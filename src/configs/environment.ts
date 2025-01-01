@@ -58,7 +58,7 @@ export const environmentConfig = {
     SMTP_PORT: parseInt(process.env.SMTP_PORT || "587"),
     SMTP_USER: process.env.SMTP_USER,
     SMTP_PASS: process.env.SMTP_PASS,
-    FROM_EMAIL: process.env.FROM_EMAIL || "noreply@attendance.com",
+    FROM_EMAIL: process.env.FROM_EMAIL || "abdulqaharolajide@gmail.com",
   },
 
   // Cache Configuration (if using Redis or similar)
