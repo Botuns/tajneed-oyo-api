@@ -25,6 +25,9 @@ export abstract class BaseRepository<T extends mongoose.Document> {
   async find(conditions: Partial<T>): Promise<T[]> {
     return this.model.find(conditions as mongoose.FilterQuery<T>).exec();
   }
+  async findAll(): Promise<T[]> {
+    return this.model.find().exec();
+  }
 
   async findOne(conditions: Partial<T>): Promise<T | null> {
     return this.model.findOne(conditions as mongoose.FilterQuery<T>).exec();
