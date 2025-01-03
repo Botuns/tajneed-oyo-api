@@ -3,9 +3,12 @@ import jwt from "jsonwebtoken";
 import { validationResult } from "express-validator";
 import { ApiResponse, ResponseStatus } from "../utils/api.response";
 import { Officer } from "../models/officer.model";
-
+import { IOfficer } from "../interfaces";
+interface RequestWithUser extends Request {
+  user?: IOfficer;
+}
 export const isAuthenticated = async (
-  req: Request,
+  req: RequestWithUser,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
@@ -36,7 +39,7 @@ export const isAuthenticated = async (
 };
 // Middleware to check if the user is an admin
 export const isAdmin = (
-  req: Request,
+  req: RequestWithUser,
   res: Response,
   next: NextFunction
 ): void => {

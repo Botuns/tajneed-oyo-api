@@ -1,9 +1,9 @@
-import { IOfficer } from "../../interfaces";
+// import { IOfficer } from "../../interfaces";
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: IOfficer;
-    }
-  }
-}
+// declare global {
+//   namespace Express {
+//     interface Request {
+//       user?: IOfficer;
+//     }
+//   }
+// }

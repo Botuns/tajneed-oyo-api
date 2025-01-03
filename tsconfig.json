@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
-    "typeRoots": ["./node_modules/@types", "./src/lib/types"],
+    "typeRoots": ["./node_modules/@types", "./types"],
+    "types": ["express"],
+
+    "declaration": true,
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
     /* Projects */
@@ -110,5 +113,5 @@
   },
   "rootDir": "./src",
   "outDir": "./dist",
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "types/**/*"]
 }
