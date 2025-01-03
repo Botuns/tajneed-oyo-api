@@ -109,5 +109,6 @@
     "skipLibCheck": true /* Skip type checking all .d.ts files. */
   },
   "rootDir": "./src",
-  "outDir": "./dist"
+  "outDir": "./dist",
+  "include": ["src/**/*"]
 }
