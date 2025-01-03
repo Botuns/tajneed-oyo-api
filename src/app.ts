@@ -1,11 +1,9 @@
 import express, { Application } from "express";
-import mongoose from "mongoose";
-import cors from "cors";
-import morgan from "morgan";
 import { environmentConfig } from "./configs/environment";
 import { Middleware } from "./middlewares";
 import { Database } from "./configs/database";
 import { Logger } from "./utils/logger";
+import { officeRouter } from "./routes";
 
 export class App {
   public app: Application;
@@ -42,9 +40,7 @@ export class App {
   }
 
   private setupRoutes(): void {
-    // Import and use your route files here
-    // Example:
-    // this.app.use(`${environment.API.PREFIX}/users`, userRoutes);
+    this.app.use(`${environmentConfig.API_VERSION}/office`, officeRouter);
     // this.app.use(`${environment.API.PREFIX}/products`, productRoutes);
   }
 
