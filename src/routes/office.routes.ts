@@ -2,7 +2,16 @@ import { Router } from "express";
 import { OfficeController } from "../controllers/office.controller";
 
 import { Logger } from "../utils/logger";
-import { AddOfficerToOfficeDto, CreateOfficeDto, UpdateOfficeDto } from "../lib/types/DTOs";
+import {
+  AddOfficerToOfficeDto,
+  CreateOfficeDto,
+  UpdateOfficeDto,
+} from "../lib/types/DTOs";
+import {
+  isAdmin,
+  isAuthenticated,
+  validateRequest,
+} from "../middlewares/auth.middleware";
 
 export const officeRouter = Router();
 const officeController = new OfficeController();
