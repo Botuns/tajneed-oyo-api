@@ -17,7 +17,7 @@ export const officeRouter = Router();
 const officeController = new OfficeController();
 const logger = new Logger("OfficeRoutes");
 
-officeRouter.use(isAuthenticated);
+// officeRouter.use(isAuthenticated);
 
 officeRouter.use((req, res, next) => {
   logger.info("Incoming office route request", {
@@ -34,7 +34,7 @@ officeRouter.get("/:id", officeController.getOfficeById);
 
 officeRouter.post(
   "/",
-  isAdmin,
+  // isAdmin,
   validateRequest(CreateOfficeDto),
   officeController.createOffice
 );

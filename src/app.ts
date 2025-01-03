@@ -40,7 +40,7 @@ export class App {
   }
 
   private setupRoutes(): void {
-    this.app.use(`${environmentConfig.API_VERSION}/office`, officeRouter);
+    this.app.use(`/${environmentConfig.API_VERSION}/office`, officeRouter);
     // this.app.use(`${environment.API.PREFIX}/products`, productRoutes);
   }
 
