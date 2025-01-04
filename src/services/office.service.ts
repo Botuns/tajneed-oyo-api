@@ -152,4 +152,23 @@ export class OfficeService {
       throw error;
     }
   }
+  async getOfficesByOfficer(officerId: string): Promise<IOffice[]> {
+    try {
+      this.logger.info("Fetching offices by officer", { officerId });
+      const offices = await this.officeRepository.findOne({
+        officers: { $in: [officerId] },
+      });
+      this.logger.info("Offices fetched successfully", {
+        count: offices.length,
+      });
+      return offices;
+    } catch (error: any) {
+      this.logger.error("Failed to fetch offices by officer", error.stack, {
+        officerId,
+        error: error.message,
+      });
+      throw error;
+    }
+  }
 }
+// method to get a list of oficces a officer belongs to
