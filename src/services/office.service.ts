@@ -1,3 +1,4 @@
+import { FilterQuery } from "mongoose";
 import { IOffice } from "../interfaces";
 import { CreateOfficeDto, UpdateOfficeDto } from "../lib/types/DTOs";
 import { OfficeRepository } from "../repositories/office.repository";
@@ -155,12 +156,20 @@ export class OfficeService {
   async getOfficesByOfficer(officerId: string): Promise<IOffice[]> {
     try {
       this.logger.info("Fetching offices by officer", { officerId });
-      const offices = await this.officeRepository.findOne({
-        officers: { $in: [officerId] },
+      // const offices = await this.officeRepository.findOne({
+      //   officers: { $in: [officerId] },
+      // });
+      const offices = await this.officeRepository.find({
+        officers: { $in: [officerId] } as FilterQuery<IOffice>["officers"],
       });
+
       this.logger.info("Offices fetched successfully", {
         count: offices.length,
       });
+      if (!offices) {
+        this.logger.warn("Offices not found", { officerId });
+        throw new CustomError("Offices not found", 404);
+      }
       return offices;
     } catch (error: any) {
       this.logger.error("Failed to fetch offices by officer", error.stack, {
