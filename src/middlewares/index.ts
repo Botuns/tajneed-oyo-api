@@ -1,3 +1,4 @@
+import cors from "cors";
 import { Request, Response, NextFunction } from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
@@ -15,6 +16,13 @@ export class Middleware {
    */
   public static setup(app: any): void {
     // Security middleware
+    app.use(
+      cors({
+        origin: "http://localhost:3000",
+        methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+        credentials: true,
+      })
+    );
     app.use(helmet());
     app.use(mongoSanitize());
     app.use(this.rateLimiter());
