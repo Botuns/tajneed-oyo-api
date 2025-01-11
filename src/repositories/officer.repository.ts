@@ -27,4 +27,28 @@ export class OfficerRepository extends BaseRepository<IOfficer> {
       { new: true }
     );
   }
+  async count(query: Record<string, any> = {}): Promise<number> {
+    try {
+      const count = await this.model.countDocuments(query).exec();
+
+      return count;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+  async find(
+    query: Partial<IOfficer>,
+    options?: {
+      skip?: number;
+      limit?: number;
+      sort?: { [key: string]: number };
+    }
+  ): Promise<IOfficer[]> {
+    return this.model
+      .find(query)
+      .skip(options?.skip || 0)
+      .limit(options?.limit || 10)
+      .sort(options?.sort || {})
+      .exec();
+  }
 }
