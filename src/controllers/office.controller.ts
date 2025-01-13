@@ -4,9 +4,9 @@ import {
   CreateOfficeDto,
   UpdateOfficeDto,
 } from "../lib/types/DTOs";
-import { OfficeService } from "../services/office.service";
 import { Logger } from "../utils/logger";
 import { ApiResponse, ResponseStatus } from "../utils/api.response";
+import { OfficeService } from "../services";
 
 export class OfficeController {
   private officeService: OfficeService;
