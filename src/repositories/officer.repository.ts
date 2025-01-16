@@ -36,19 +36,19 @@ export class OfficerRepository extends BaseRepository<IOfficer> {
       throw error;
     }
   }
-  async find(
-    query: Partial<IOfficer>,
-    options?: {
-      skip?: number;
-      limit?: number;
-      sort?: { [key: string]: number };
-    }
-  ): Promise<IOfficer[]> {
-    return this.model
-      .find(query)
-      .skip(options?.skip || 0)
-      .limit(options?.limit || 10)
-      .sort(options?.sort || {})
-      .exec();
-  }
+  // async find(
+  //   query: Partial<IOfficer>,
+  //   options?: {
+  //     skip?: number;
+  //     limit?: number;
+  //     sort?: { [key: string]: number };
+  //   }
+  // ): Promise<IOfficer[]> {
+  //   return this.model
+  //     .find(query)
+  //     .skip(options?.skip || 0)
+  //     .limit(options?.limit || 10)
+  //     .sort(options?.sort || {})
+  //     .exec();
+  // }
 }

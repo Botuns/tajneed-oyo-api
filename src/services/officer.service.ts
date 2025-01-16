@@ -42,63 +42,63 @@ export class OfficerService {
 
   // get all oficers paginated
 
-  async getAllOfficers(
-    page: number = 1,
-    limit: number = 10,
-    query: Record<string, any> = {}
-  ): Promise<{
-    officers: IOfficer[];
-    total: number;
-    page: number;
-    totalPages: number;
-  }> {
-    try {
-      this.logger.info("Fetching all officers", { page, limit, query });
+  // async getAllOfficers(
+  //   page: number = 1,
+  //   limit: number = 10,
+  //   query: Record<string, any> = {}
+  // ): Promise<{
+  //   officers: IOfficer[];
+  //   total: number;
+  //   page: number;
+  //   totalPages: number;
+  // }> {
+  //   try {
+  //     this.logger.info("Fetching all officers", { page, limit, query });
 
-      const skip = (page - 1) * limit;
+  //     const skip = (page - 1) * limit;
 
-      const total = await this.officerRepository.count(query);
+  //     const total = await this.officerRepository.count(query);
 
-      const totalPages = Math.ceil(total / limit);
+  //     const totalPages = Math.ceil(total / limit);
 
-      if (page > totalPages && total > 0) {
-        throw new CustomError(
-          `Page ${page} does not exist. Total pages: ${totalPages}`,
-          400
-        );
-      }
+  //     if (page > totalPages && total > 0) {
+  //       throw new CustomError(
+  //         `Page ${page} does not exist. Total pages: ${totalPages}`,
+  //         400
+  //       );
+  //     }
 
-      //   const officers = await this.officerRepository.find(query, {
-      //     skip,
-      //     limit,
-      //     sort: { createdAt: -1 },
-      //   });
-      const officers = await this.officerRepository.find(query, {
-        skip,
-        limit,
-        sort: { createdAt: -1 },
-      });
+  //     //   const officers = await this.officerRepository.find(query, {
+  //     //     skip,
+  //     //     limit,
+  //     //     sort: { createdAt: -1 },
+  //     //   });
+  //     const officers = await this.officerRepository.find(query, {
+  //       skip,
+  //       limit,
+  //       sort: { createdAt: -1 },
+  //     });
 
-      this.logger.info("Officers fetched successfully", {
-        totalOfficers: total,
-        returnedOfficers: officers.length,
-        page,
-        totalPages,
-      });
+  //     this.logger.info("Officers fetched successfully", {
+  //       totalOfficers: total,
+  //       returnedOfficers: officers.length,
+  //       page,
+  //       totalPages,
+  //     });
 
-      return {
-        officers,
-        total,
-        page,
-        totalPages,
-      };
-    } catch (error: any) {
-      this.logger.error("Failed to fetch officers", error.stack, {
-        error: error.message,
-        page,
-        limit,
-      });
-      throw error;
-    }
-  }
+  //     return {
+  //       officers,
+  //       total,
+  //       page,
+  //       totalPages,
+  //     };
+  //   } catch (error: any) {
+  //     this.logger.error("Failed to fetch officers", error.stack, {
+  //       error: error.message,
+  //       page,
+  //       limit,
+  //     });
+  //     throw error;
+  //   }
+  // }
 }

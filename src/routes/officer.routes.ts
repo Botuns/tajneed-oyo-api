@@ -24,4 +24,4 @@ officerRouter.post(
   validateRequest(CreateOfficerDto),
   officerController.createOfficer
 );
-officerRouter.get("/", officerController.getAllOfficers);
+// officerRouter.get("/", officerController.getAllOfficers);

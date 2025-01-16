@@ -1,3 +1,4 @@
+import { Request, Response } from "express";
 import { CreateOfficerDto } from "../lib/types/DTOs/officer.dto";
 import { OfficerService } from "../services";
 import { ApiResponse } from "../utils/api.response";
@@ -37,19 +38,19 @@ export class OfficerController {
     }
   };
 
-  getAllOfficers = async (req: Request, res: Response): Promise<void> => {
-    try {
-      this.logger.info("Received get all officers request", {
-        query: req.query,
-      });
-      const officers = await this.officerService.getAllOfficers(req.query);
-      res
-        .status(200)
-        .json(ApiResponse.success(officers, "Officers retrieved successfully"));
-    } catch (error: any) {
-      this.logger.error("Get all officers request failed", error.stack, {
-        error: error.message,
-      });
-    }
-  };
+  //   getAllOfficers = async (req: Request, res: Response): Promise<void> => {
+  //     try {
+  //       this.logger.info("Received get all officers request", {
+  //         query: req.query,
+  //       });
+  //       const officers = await this.officerService.getAllOfficers(req.query);
+  //       res
+  //         .status(200)
+  //         .json(ApiResponse.success(officers, "Officers retrieved successfully"));
+  //     } catch (error: any) {
+  //       this.logger.error("Get all officers request failed", error.stack, {
+  //         error: error.message,
+  //       });
+  //     }
+  //   };
 }
