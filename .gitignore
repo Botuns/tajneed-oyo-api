@@ -92,6 +92,15 @@ out
 .nuxt
 dist
 
+# TypeScript compiled output
+dist/
+*.js
+*.d.ts
+*.js.map
+# But keep config files
+!*.config.js
+!jest.config.js
+
 # Gatsby files
 .cache/
 # Comment in the public line in if your project uses Gatsby and not Next.js

@@ -1,9 +1,12 @@
 import { Router } from "express";
 import { OfficerController } from "../controllers/officer.controller";
 import { Logger } from "../utils/logger";
-import path from "path";
 import { validateRequest } from "../middlewares/auth.middleware";
-import { CreateOfficerDto } from "../lib/types/DTOs/officer.dto";
+import {
+  CreateOfficerDto,
+  UpdateOfficerDto,
+  RegisterFingerprintDto,
+} from "../lib/types/DTOs/officer.dto";
 
 export const officerRouter = Router();
 const officerController = new OfficerController();
@@ -19,9 +22,29 @@ officerRouter.use((req, res, next) => {
   next();
 });
 
+officerRouter.get("/", officerController.getAllOfficers);
+officerRouter.get("/:id", officerController.getOfficerById);
+officerRouter.get(
+  "/unique-code/:uniqueCode",
+  officerController.getOfficerByUniqueCode
+);
+
 officerRouter.post(
   "/",
   validateRequest(CreateOfficerDto),
   officerController.createOfficer
 );
-// officerRouter.get("/", officerController.getAllOfficers);
+
+officerRouter.patch(
+  "/:id",
+  validateRequest(UpdateOfficerDto),
+  officerController.updateOfficer
+);
+
+officerRouter.post(
+  "/:id/fingerprint",
+  validateRequest(RegisterFingerprintDto),
+  officerController.registerFingerprint
+);
+
+officerRouter.delete("/:id", officerController.deleteOfficer);

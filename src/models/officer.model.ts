@@ -8,7 +8,7 @@ const OfficerSchema = new Schema<IOfficer>(
     email: { type: String, required: true, unique: true },
     phoneNumber: { type: String, required: true },
     fingerprint: { type: String },
-    uniqueCode: { type: String, required: true, unique: true },
+    uniqueCode: { type: String, unique: true, sparse: true },
     offices: [{ type: Schema.Types.ObjectId, ref: "Office" }],
     userType: { type: String, enum: UserType, default: UserType.OFFICER },
     isAdmin: { type: Boolean, default: false },

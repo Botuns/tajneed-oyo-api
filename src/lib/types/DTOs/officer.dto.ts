@@ -1,29 +1,29 @@
 import { UserType } from "../../../enums";
 
 export class CreateOfficerDto {
-  name!: string;
+  firstName!: string;
+  lastName!: string;
   email!: string;
-  phone!: string;
-  offices!: [string];
-  userType!: UserType;
-  isAdmin!: boolean;
+  phoneNumber!: string;
+  offices?: string[];
+  userType?: UserType;
+  isAdmin?: boolean;
   tenureStart!: Date;
-  tenureEnd!: Date;
-  figerprint?: string;
-  uniqueCode?: string;
-  phoneNumber?: string;
+  tenureEnd?: Date;
 }
 
 export class UpdateOfficerDto {
-  name?: string;
+  firstName?: string;
+  lastName?: string;
   email?: string;
-  phone?: string;
-  offices?: [string];
-  userType?: string;
+  phoneNumber?: string;
+  offices?: string[];
+  userType?: UserType;
   isAdmin?: boolean;
   tenureStart?: Date;
   tenureEnd?: Date;
-  figerprint?: string;
-  uniqueCode?: string;
-  phoneNumber?: string;
+}
+
+export class RegisterFingerprintDto {
+  fingerprintData!: string;
 }
