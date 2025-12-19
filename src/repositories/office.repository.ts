@@ -7,6 +7,10 @@ export class OfficeRepository extends BaseRepository<IOffice> {
     super(Office);
   }
 
+  async findByIds(ids: string[]): Promise<IOffice[]> {
+    return this.model.find({ _id: { $in: ids }, isDeleted: false }).exec();
+  }
+
   async addOfficer(
     officeId: string,
     officerId: string

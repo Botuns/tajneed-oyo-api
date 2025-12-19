@@ -28,42 +28,163 @@ import {
  *     Meeting:
  *       type: object
  *       properties:
- *         id:
+ *         _id:
  *           type: string
  *           description: The meeting ID
  *         title:
  *           type: string
- *           description: The meeting title
+ *           description: Meeting title
  *         description:
  *           type: string
  *           description: Meeting description
  *         date:
  *           type: string
  *           format: date-time
- *           description: Meeting date and time
+ *           description: Meeting date
+ *         startTime:
+ *           type: string
+ *           format: date-time
+ *           description: Meeting start time
+ *         endTime:
+ *           type: string
+ *           format: date-time
+ *           description: Meeting end time
  *         location:
  *           type: string
  *           description: Meeting location
- *         status:
+ *         organizer:
  *           type: string
- *           enum: [scheduled, ongoing, completed, cancelled]
- *           description: Meeting status
- *         officeId:
- *           type: string
- *           description: Associated office ID
+ *           description: Organizer officer ID
  *         expectedAttendees:
  *           type: array
  *           items:
  *             type: string
- *           description: List of expected officer IDs
+ *           description: Array of expected attendee officer IDs
+ *         status:
+ *           type: string
+ *           enum: [SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED]
+ *           description: Meeting status
+ *         isDeleted:
+ *           type: boolean
+ *           description: Soft delete flag
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
  *       example:
- *         id: 507f1f77bcf86cd799439011
- *         title: Monthly Review
- *         description: Monthly team review meeting
- *         date: 2025-12-20T10:00:00Z
- *         location: Conference Room A
- *         status: scheduled
- *         officeId: 507f1f77bcf86cd799439012
+ *         _id: "507f1f77bcf86cd799439011"
+ *         title: "Monthly Tajneed Meeting"
+ *         description: "Regular monthly meeting for all officers"
+ *         date: "2025-12-20T00:00:00Z"
+ *         startTime: "2025-12-20T10:00:00Z"
+ *         endTime: "2025-12-20T12:00:00Z"
+ *         location: "Main Hall"
+ *         organizer: "507f1f77bcf86cd799439012"
+ *         expectedAttendees: ["507f1f77bcf86cd799439013", "507f1f77bcf86cd799439014"]
+ *         status: "SCHEDULED"
+ *         isDeleted: false
+ *     CreateMeetingDto:
+ *       type: object
+ *       required:
+ *         - title
+ *         - description
+ *         - date
+ *         - startTime
+ *         - endTime
+ *         - location
+ *         - organizer
+ *       properties:
+ *         title:
+ *           type: string
+ *           example: "Monthly Tajneed Meeting"
+ *         description:
+ *           type: string
+ *           example: "Regular monthly meeting for all officers"
+ *         date:
+ *           type: string
+ *           format: date-time
+ *           example: "2025-12-20T00:00:00Z"
+ *         startTime:
+ *           type: string
+ *           format: date-time
+ *           example: "2025-12-20T10:00:00Z"
+ *         endTime:
+ *           type: string
+ *           format: date-time
+ *           example: "2025-12-20T12:00:00Z"
+ *         location:
+ *           type: string
+ *           example: "Main Hall"
+ *         organizer:
+ *           type: string
+ *           description: Organizer officer ID
+ *           example: "507f1f77bcf86cd799439012"
+ *         expectedAttendees:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: Array of officer IDs expected to attend
+ *           example: ["507f1f77bcf86cd799439013"]
+ *     UpdateMeetingDto:
+ *       type: object
+ *       properties:
+ *         title:
+ *           type: string
+ *           example: "Updated Meeting Title"
+ *         description:
+ *           type: string
+ *           example: "Updated description"
+ *         date:
+ *           type: string
+ *           format: date-time
+ *         startTime:
+ *           type: string
+ *           format: date-time
+ *         endTime:
+ *           type: string
+ *           format: date-time
+ *         location:
+ *           type: string
+ *         organizer:
+ *           type: string
+ *         expectedAttendees:
+ *           type: array
+ *           items:
+ *             type: string
+ *         status:
+ *           type: string
+ *           enum: [SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED]
+ *     UpdateMeetingStatusDto:
+ *       type: object
+ *       required:
+ *         - status
+ *       properties:
+ *         status:
+ *           type: string
+ *           enum: [SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED]
+ *           example: "IN_PROGRESS"
+ *     AddExpectedAttendeesDto:
+ *       type: object
+ *       required:
+ *         - officerIds
+ *       properties:
+ *         officerIds:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: Array of officer IDs to add as expected attendees
+ *           example: ["507f1f77bcf86cd799439013", "507f1f77bcf86cd799439014"]
+ *     CreateMonthlyMeetingDto:
+ *       type: object
+ *       required:
+ *         - organizerId
+ *       properties:
+ *         organizerId:
+ *           type: string
+ *           description: The officer ID who will organize monthly meetings
+ *           example: "507f1f77bcf86cd799439012"
  */
 
 export const meetingRouter = Router();
@@ -140,7 +261,8 @@ meetingRouter.get("/upcoming", meetingController.getUpcomingMeetings);
  *         required: true
  *         schema:
  *           type: string
- *         description: The meeting ID
+ *         description: The meeting ID (MongoDB ObjectId)
+ *         example: "507f1f77bcf86cd799439011"
  *     responses:
  *       200:
  *         description: Meeting details
@@ -165,38 +287,25 @@ meetingRouter.get("/:id", meetingController.getMeetingById);
  *   post:
  *     summary: Create a new meeting
  *     tags: [Meetings]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - title
- *               - date
- *               - officeId
- *             properties:
- *               title:
- *                 type: string
- *                 example: Monthly Review
- *               description:
- *                 type: string
- *                 example: Monthly team review meeting
- *               date:
- *                 type: string
- *                 format: date-time
- *                 example: 2025-12-20T10:00:00Z
- *               location:
- *                 type: string
- *                 example: Conference Room A
- *               officeId:
- *                 type: string
- *                 example: 507f1f77bcf86cd799439012
+ *             $ref: '#/components/schemas/CreateMeetingDto'
  *     responses:
  *       201:
  *         description: Meeting created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   $ref: '#/components/schemas/Meeting'
  *       400:
  *         description: Invalid request body
  */
@@ -210,41 +319,27 @@ meetingRouter.post(
  * @swagger
  * /meetings/monthly:
  *   post:
- *     summary: Create monthly recurring meeting
+ *     summary: Create monthly recurring meeting (auto-generated)
  *     tags: [Meetings]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - title
- *               - dayOfMonth
- *               - officeId
- *             properties:
- *               title:
- *                 type: string
- *                 example: Monthly Review
- *               description:
- *                 type: string
- *                 example: Recurring monthly meeting
- *               dayOfMonth:
- *                 type: integer
- *                 minimum: 1
- *                 maximum: 31
- *                 example: 15
- *               location:
- *                 type: string
- *                 example: Conference Room A
- *               officeId:
- *                 type: string
- *                 example: 507f1f77bcf86cd799439012
+ *             $ref: '#/components/schemas/CreateMonthlyMeetingDto'
  *     responses:
  *       201:
  *         description: Monthly meeting created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   $ref: '#/components/schemas/Meeting'
  *       400:
  *         description: Invalid request body
  */
@@ -260,34 +355,33 @@ meetingRouter.post(
  *   patch:
  *     summary: Update a meeting
  *     tags: [Meetings]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: The meeting ID
+ *         description: The meeting ID (MongoDB ObjectId)
+ *         example: "507f1f77bcf86cd799439011"
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               title:
- *                 type: string
- *               description:
- *                 type: string
- *               date:
- *                 type: string
- *                 format: date-time
- *               location:
- *                 type: string
+ *             $ref: '#/components/schemas/UpdateMeetingDto'
  *     responses:
  *       200:
  *         description: Meeting updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   $ref: '#/components/schemas/Meeting'
  *       404:
  *         description: Meeting not found
  */
@@ -303,31 +397,33 @@ meetingRouter.patch(
  *   patch:
  *     summary: Update meeting status
  *     tags: [Meetings]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: The meeting ID
+ *         description: The meeting ID (MongoDB ObjectId)
+ *         example: "507f1f77bcf86cd799439011"
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - status
- *             properties:
- *               status:
- *                 type: string
- *                 enum: [scheduled, ongoing, completed, cancelled]
- *                 example: ongoing
+ *             $ref: '#/components/schemas/UpdateMeetingStatusDto'
  *     responses:
  *       200:
  *         description: Meeting status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   $ref: '#/components/schemas/Meeting'
  *       404:
  *         description: Meeting not found
  */
@@ -341,34 +437,35 @@ meetingRouter.patch(
  * @swagger
  * /meetings/{id}/attendees:
  *   post:
- *     summary: Add expected attendees to meeting
+ *     summary: Add expected attendees to a meeting
  *     tags: [Meetings]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: The meeting ID
+ *         description: The meeting ID (MongoDB ObjectId)
+ *         example: "507f1f77bcf86cd799439011"
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - officerIds
- *             properties:
- *               officerIds:
- *                 type: array
- *                 items:
- *                   type: string
- *                 example: ["507f1f77bcf86cd799439012", "507f1f77bcf86cd799439013"]
+ *             $ref: '#/components/schemas/AddExpectedAttendeesDto'
  *     responses:
  *       200:
  *         description: Attendees added successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   $ref: '#/components/schemas/Meeting'
  *       404:
  *         description: Meeting not found
  */
@@ -382,20 +479,30 @@ meetingRouter.post(
  * @swagger
  * /meetings/{id}:
  *   delete:
- *     summary: Delete a meeting
+ *     summary: Delete a meeting (soft delete)
  *     tags: [Meetings]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: The meeting ID
+ *         description: The meeting ID (MongoDB ObjectId)
+ *         example: "507f1f77bcf86cd799439011"
  *     responses:
  *       200:
  *         description: Meeting deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: Meeting deleted successfully
  *       404:
  *         description: Meeting not found
  */

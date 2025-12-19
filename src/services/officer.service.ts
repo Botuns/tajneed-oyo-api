@@ -23,6 +23,28 @@ export class OfficerService {
         email: createOfficerDto.email,
       });
 
+      if (createOfficerDto.offices && createOfficerDto.offices.length > 0) {
+        const existingOffices = await this.officeRepository.findByIds(
+          createOfficerDto.offices
+        );
+        const existingOfficeIds = existingOffices.map((office) =>
+          office._id.toString()
+        );
+        const invalidOfficeIds = createOfficerDto.offices.filter(
+          (id) => !existingOfficeIds.includes(id)
+        );
+
+        if (invalidOfficeIds.length > 0) {
+          this.logger.warn("Officer creation failed - invalid office IDs", {
+            invalidOfficeIds,
+          });
+          throw new CustomError(
+            `Invalid office IDs: ${invalidOfficeIds.join(", ")}`,
+            400
+          );
+        }
+      }
+
       const existingOfficer = await this.officerRepository.findOne({
         email: createOfficerDto.email,
       });

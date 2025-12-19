@@ -27,25 +27,99 @@ import {
  *     Office:
  *       type: object
  *       properties:
- *         id:
+ *         _id:
  *           type: string
  *           description: The office ID
  *         name:
  *           type: string
- *           description: The office name
- *         location:
+ *           description: Office name
+ *         email:
  *           type: string
- *           description: The office location
+ *           format: email
+ *           description: Office email address
+ *         description:
+ *           type: string
+ *           description: Office description
  *         officers:
  *           type: array
  *           items:
  *             type: string
- *           description: List of officer IDs assigned to this office
+ *           description: Array of officer IDs assigned to this office
+ *         totalOfficers:
+ *           type: integer
+ *           description: Total number of officers in the office
+ *         responsibilities:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: List of office responsibilities
+ *         isDeleted:
+ *           type: boolean
+ *           description: Soft delete flag
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
  *       example:
- *         id: 507f1f77bcf86cd799439011
- *         name: Main Office
- *         location: New York
+ *         _id: "507f1f77bcf86cd799439011"
+ *         name: "Finance Department"
+ *         email: "finance@tajneed.org"
+ *         description: "Handles all financial matters"
  *         officers: ["507f1f77bcf86cd799439012"]
+ *         totalOfficers: 5
+ *         responsibilities: ["Budget management", "Financial reporting"]
+ *         isDeleted: false
+ *     CreateOfficeDto:
+ *       type: object
+ *       required:
+ *         - name
+ *         - email
+ *         - description
+ *         - responsibilities
+ *       properties:
+ *         name:
+ *           type: string
+ *           example: "Finance Department"
+ *         email:
+ *           type: string
+ *           format: email
+ *           example: "finance@tajneed.org"
+ *         description:
+ *           type: string
+ *           example: "Handles all financial matters for the organization"
+ *         responsibilities:
+ *           type: array
+ *           items:
+ *             type: string
+ *           example: ["Budget management", "Financial reporting", "Expense tracking"]
+ *     UpdateOfficeDto:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *           example: "Finance Department Updated"
+ *         email:
+ *           type: string
+ *           format: email
+ *           example: "finance.updated@tajneed.org"
+ *         description:
+ *           type: string
+ *           example: "Updated description"
+ *         responsibilities:
+ *           type: array
+ *           items:
+ *             type: string
+ *     AddOfficerToOfficeDto:
+ *       type: object
+ *       required:
+ *         - officerId
+ *       properties:
+ *         officerId:
+ *           type: string
+ *           description: The officer ID to add to this office
+ *           example: "507f1f77bcf86cd799439012"
  */
 
 export const officeRouter = Router();
@@ -100,7 +174,8 @@ officeRouter.get("/", officeController.getAllOffices);
  *         required: true
  *         schema:
  *           type: string
- *         description: The office ID
+ *         description: The office ID (MongoDB ObjectId)
+ *         example: "507f1f77bcf86cd799439011"
  *     responses:
  *       200:
  *         description: Office details
@@ -125,23 +200,12 @@ officeRouter.get("/:id", officeController.getOfficeById);
  *   post:
  *     summary: Create a new office
  *     tags: [Offices]
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - name
- *             properties:
- *               name:
- *                 type: string
- *                 example: Main Office
- *               location:
- *                 type: string
- *                 example: New York
+ *             $ref: '#/components/schemas/CreateOfficeDto'
  *     responses:
  *       201:
  *         description: Office created successfully
@@ -157,8 +221,6 @@ officeRouter.get("/:id", officeController.getOfficeById);
  *                   $ref: '#/components/schemas/Office'
  *       400:
  *         description: Invalid request body
- *       401:
- *         description: Unauthorized - Admin access required
  */
 officeRouter.post(
   "/",
@@ -181,23 +243,27 @@ officeRouter.post(
  *         required: true
  *         schema:
  *           type: string
- *         description: The office ID
+ *         description: The office ID (MongoDB ObjectId)
+ *         example: "507f1f77bcf86cd799439011"
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *                 example: Main Office Updated
- *               location:
- *                 type: string
- *                 example: New York, NY
+ *             $ref: '#/components/schemas/UpdateOfficeDto'
  *     responses:
  *       200:
  *         description: Office updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   $ref: '#/components/schemas/Office'
  *       401:
  *         description: Unauthorized - Admin access required
  *       404:
@@ -214,7 +280,7 @@ officeRouter.patch(
  * @swagger
  * /offices/{id}:
  *   delete:
- *     summary: Delete an office
+ *     summary: Delete an office (soft delete)
  *     tags: [Offices]
  *     security:
  *       - bearerAuth: []
@@ -224,10 +290,22 @@ officeRouter.patch(
  *         required: true
  *         schema:
  *           type: string
- *         description: The office ID
+ *         description: The office ID (MongoDB ObjectId)
+ *         example: "507f1f77bcf86cd799439011"
  *     responses:
  *       200:
  *         description: Office deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: Office deleted successfully
  *       401:
  *         description: Unauthorized - Admin access required
  *       404:
@@ -239,7 +317,7 @@ officeRouter.delete("/:id", isAdmin, officeController.deleteOffice);
  * @swagger
  * /offices/{id}/officers:
  *   post:
- *     summary: Add officer to office
+ *     summary: Add an officer to an office
  *     tags: [Offices]
  *     security:
  *       - bearerAuth: []
@@ -249,23 +327,27 @@ officeRouter.delete("/:id", isAdmin, officeController.deleteOffice);
  *         required: true
  *         schema:
  *           type: string
- *         description: The office ID
+ *         description: The office ID (MongoDB ObjectId)
+ *         example: "507f1f77bcf86cd799439011"
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - officerId
- *             properties:
- *               officerId:
- *                 type: string
- *                 description: The officer ID to add
- *                 example: 507f1f77bcf86cd799439012
+ *             $ref: '#/components/schemas/AddOfficerToOfficeDto'
  *     responses:
  *       200:
- *         description: Officer added successfully
+ *         description: Officer added to office successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   $ref: '#/components/schemas/Office'
  *       401:
  *         description: Unauthorized - Admin access required
  *       404:
