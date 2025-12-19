@@ -10,6 +10,8 @@ import {
   attendanceRouter,
 } from "./routes";
 import { SchedulerService } from "./services/scheduler.service";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./configs/swagger";
 
 export class App {
   public app: Application;
@@ -49,6 +51,22 @@ export class App {
 
   private setupRoutes(): void {
     const apiPrefix = `/${environmentConfig.API_VERSION}`;
+
+    // Swagger Documentation
+    this.app.use(
+      "/api-docs",
+      swaggerUi.serve,
+      swaggerUi.setup(swaggerSpec, {
+        customCss: ".swagger-ui .topbar { display: none }",
+        customSiteTitle: "Tajneed OYO API Docs",
+      })
+    );
+
+    // Swagger JSON
+    this.app.get("/api-docs.json", (req, res) => {
+      res.setHeader("Content-Type", "application/json");
+      res.send(swaggerSpec);
+    });
 
     this.app.use(`${apiPrefix}/offices`, officeRouter);
     this.app.use(`${apiPrefix}/officers`, officerRouter);
