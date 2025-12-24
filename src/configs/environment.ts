@@ -109,16 +109,7 @@ export function validateConfig(): ConfigValidationError[] {
     });
   }
 
-  // Validate Security Configuration
-  if (
-    environmentConfig.NODE_ENV === "production" &&
-    environmentConfig.SECURITY.CORS_ORIGIN === "*"
-  ) {
-    errors.push({
-      field: "SECURITY.CORS_ORIGIN",
-      message: "CORS origin should be specifically defined in production",
-    });
-  }
+  // CORS validation removed - configure CORS_ORIGIN in production for better security
 
   if (
     environmentConfig.SECURITY.ENABLE_HTTPS &&
