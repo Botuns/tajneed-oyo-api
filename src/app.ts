@@ -18,14 +18,19 @@ export class App {
   private logger = new Logger("App");
   private schedulerService: SchedulerService;
 
-  constructor() {
+  private constructor() {
     this.app = express();
     this.schedulerService = new SchedulerService();
-    this.setupMiddleware();
-    this.setupDatabase();
-    this.setupRoutes();
-    this.setupErrorHandling();
-    this.startScheduler();
+  }
+
+  public static async create(): Promise<App> {
+    const instance = new App();
+    instance.setupMiddleware();
+    await instance.initializeDatabase();
+    instance.setupRoutes();
+    instance.setupErrorHandling();
+    instance.startScheduler();
+    return instance;
   }
 
   private setupMiddleware(): void {
@@ -35,7 +40,7 @@ export class App {
     this.app.use(express.urlencoded({ extended: true, limit: "10kb" }));
   }
 
-  private async setupDatabase(): Promise<void> {
+  private async initializeDatabase(): Promise<void> {
     try {
       await Database.connect();
       this.logger.info("Application initialized successfully");
@@ -45,7 +50,7 @@ export class App {
         uri: environmentConfig.DATABASE.MONGODB_URI,
         error: error?.message,
       });
-      process.exit(1);
+      throw error;
     }
   }
 
@@ -73,10 +78,13 @@ export class App {
     this.app.use(`${apiPrefix}/meetings`, meetingRouter);
     this.app.use(`${apiPrefix}/attendance`, attendanceRouter);
 
-    this.app.get("/health", (req, res) => {
-      res.status(200).json({
-        status: "success",
-        message: "Server is running",
+    this.app.get("/health", async (req, res) => {
+      const dbHealthy = await Database.healthCheck();
+      const status = dbHealthy ? 200 : 503;
+      res.status(status).json({
+        status: dbHealthy ? "success" : "error",
+        message: dbHealthy ? "Server is running" : "Database disconnected",
+        database: dbHealthy ? "connected" : "disconnected",
         timestamp: new Date().toISOString(),
       });
     });
