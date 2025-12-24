@@ -19,12 +19,12 @@ const options = {
         },
         servers: [
             {
-                url: `http://localhost:${environment_1.environmentConfig.PORT}/${environment_1.environmentConfig.API_VERSION}`,
-                description: "Development server",
+                url: `https://tajneed-api.azurewebsites.net/${environment_1.environmentConfig.API_VERSION}`,
+                description: "Production server",
             },
             {
-                url: `https://api.example.com/${environment_1.environmentConfig.API_VERSION}`,
-                description: "Production server",
+                url: `http://localhost:${environment_1.environmentConfig.PORT}/${environment_1.environmentConfig.API_VERSION}`,
+                description: "Development server",
             },
         ],
         components: {

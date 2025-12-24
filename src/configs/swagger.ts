@@ -14,12 +14,12 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: `http://localhost:${environmentConfig.PORT}/${environmentConfig.API_VERSION}`,
-        description: "Development server",
+        url: `https://tajneed-api.azurewebsites.net/${environmentConfig.API_VERSION}`,
+        description: "Production server",
       },
       {
-        url: `https://api.example.com/${environmentConfig.API_VERSION}`,
-        description: "Production server",
+        url: `http://localhost:${environmentConfig.PORT}/${environmentConfig.API_VERSION}`,
+        description: "Development server",
       },
     ],
     components: {
