@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AttendanceRepository = exports.MeetingRepository = exports.OfficeRepository = exports.OfficerRepository = void 0;
+var officer_repository_1 = require("./officer.repository");
+Object.defineProperty(exports, "OfficerRepository", { enumerable: true, get: function () { return officer_repository_1.OfficerRepository; } });
+var office_repository_1 = require("./office.repository");
+Object.defineProperty(exports, "OfficeRepository", { enumerable: true, get: function () { return office_repository_1.OfficeRepository; } });
+var meeting_repository_1 = require("./meeting.repository");
+Object.defineProperty(exports, "MeetingRepository", { enumerable: true, get: function () { return meeting_repository_1.MeetingRepository; } });
+var attendance_repository_1 = require("./attendance.repository");
+Object.defineProperty(exports, "AttendanceRepository", { enumerable: true, get: function () { return attendance_repository_1.AttendanceRepository; } });

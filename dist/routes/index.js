@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.attendanceRouter = exports.meetingRouter = exports.officerRouter = exports.officeRouter = void 0;
+var office_routes_1 = require("./office.routes");
+Object.defineProperty(exports, "officeRouter", { enumerable: true, get: function () { return office_routes_1.officeRouter; } });
+var officer_routes_1 = require("./officer.routes");
+Object.defineProperty(exports, "officerRouter", { enumerable: true, get: function () { return officer_routes_1.officerRouter; } });
+var meeting_routes_1 = require("./meeting.routes");
+Object.defineProperty(exports, "meetingRouter", { enumerable: true, get: function () { return meeting_routes_1.meetingRouter; } });
+var attendance_routes_1 = require("./attendance.routes");
+Object.defineProperty(exports, "attendanceRouter", { enumerable: true, get: function () { return attendance_routes_1.attendanceRouter; } });

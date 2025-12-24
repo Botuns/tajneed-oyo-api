@@ -90,13 +90,9 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
 
-# TypeScript compiled output
-dist/
-*.js
-*.d.ts
-*.js.map
+# TypeScript compiled output - NOTE: dist/ is NOT ignored to allow deployment
+# dist/
 # But keep config files
 !*.config.js
 !jest.config.js
