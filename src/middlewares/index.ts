@@ -18,7 +18,11 @@ export class Middleware {
     // Security middleware
     app.use(
       cors({
-        origin: "http://localhost:3001",
+        origin: [
+          "http://localhost:3000",
+          "http://localhost:3001",
+          /\.vercel\.app$/,
+        ],
         methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
         credentials: true,
       })
