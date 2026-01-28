@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { AttendanceStatus } from "../enums";
+import { AttendanceStatus, UserType } from "../enums";
 import { IAttendance } from "../interfaces";
 import { Attendance } from "../models/attendance.model";
 import { BaseRepository } from "./base/BaseRepository";
@@ -18,6 +18,20 @@ export class AttendanceRepository extends BaseRepository<IAttendance> {
       .populate("userId");
   }
 
+  async findCheckedInOfficersByMeeting(
+    meetingId: string,
+  ): Promise<IAttendance[]> {
+    return await this.model
+      .find({
+        meetingId,
+        isDeleted: false,
+        userType: UserType.OFFICER,
+        status: { $in: [AttendanceStatus.PRESENT, AttendanceStatus.LATE] },
+      })
+      .sort({ checkInTime: 1 })
+      .exec();
+  }
+
   async checkOut(attendanceId: string): Promise<IAttendance | null> {
     return await this.model.findOneAndUpdate(
       { _id: attendanceId, isDeleted: false },
@@ -27,13 +41,13 @@ export class AttendanceRepository extends BaseRepository<IAttendance> {
           status: AttendanceStatus.PRESENT,
         },
       },
-      { new: true }
+      { new: true },
     );
   }
 
   async markLate(
     attendanceId: string,
-    remarks?: string
+    remarks?: string,
   ): Promise<IAttendance | null> {
     return await this.model.findOneAndUpdate(
       { _id: attendanceId, isDeleted: false },
@@ -43,7 +57,7 @@ export class AttendanceRepository extends BaseRepository<IAttendance> {
           remarks: remarks || "Arrived late",
         },
       },
-      { new: true }
+      { new: true },
     );
   }
 

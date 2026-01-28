@@ -3,6 +3,8 @@ import { MeetingStatus } from "../enums";
 export declare class MeetingService {
     private meetingRepository;
     private officeRepository;
+    private attendanceRepository;
+    private officerRepository;
     private logger;
     constructor();
     createMeeting(meetingData: Partial<IMeeting>): Promise<IMeeting>;

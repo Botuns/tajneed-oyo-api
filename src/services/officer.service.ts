@@ -5,6 +5,7 @@ import { OfficeRepository } from "../repositories/office.repository";
 import { CustomError } from "../utils/custom.error";
 import { Logger } from "../utils/logger";
 import crypto from "crypto";
+import mongoose from "mongoose";
 
 export class OfficerService {
   private officerRepository: OfficerRepository;
@@ -25,13 +26,13 @@ export class OfficerService {
 
       if (createOfficerDto.offices && createOfficerDto.offices.length > 0) {
         const existingOffices = await this.officeRepository.findByIds(
-          createOfficerDto.offices
+          createOfficerDto.offices,
         );
         const existingOfficeIds = existingOffices.map((office) =>
-          office._id.toString()
+          office._id.toString(),
         );
         const invalidOfficeIds = createOfficerDto.offices.filter(
-          (id) => !existingOfficeIds.includes(id)
+          (id) => !existingOfficeIds.includes(id),
         );
 
         if (invalidOfficeIds.length > 0) {
@@ -40,7 +41,7 @@ export class OfficerService {
           });
           throw new CustomError(
             `Invalid office IDs: ${invalidOfficeIds.join(", ")}`,
-            400
+            400,
           );
         }
       }
@@ -57,15 +58,92 @@ export class OfficerService {
 
       const uniqueCode = await this.generateUniqueCode();
 
-      const officer = await this.officerRepository.create({
-        ...createOfficerDto,
-        uniqueCode,
-      });
+      const officeIds = createOfficerDto.offices ?? [];
 
-      this.logger.info("Officer created successfully", {
-        officerId: officer._id,
-      });
-      return officer;
+      // Best-effort atomic create + bidirectional linkage.
+      let session: mongoose.ClientSession | null = null;
+      try {
+        session = await mongoose.startSession();
+        session.startTransaction();
+
+        const officer = await this.officerRepository.create({
+          ...createOfficerDto,
+          uniqueCode,
+        });
+
+        for (const officeId of officeIds) {
+          await this.officeRepository.addOfficer(
+            officeId,
+            String(officer._id),
+            session,
+          );
+        }
+
+        await session.commitTransaction();
+
+        this.logger.info("Officer created successfully", {
+          officerId: officer._id,
+        });
+        return officer;
+      } catch (txError: any) {
+        if (session) {
+          try {
+            await session.abortTransaction();
+          } catch {
+            // ignore
+          }
+        }
+
+        this.logger.warn(
+          "Transaction failed; falling back to sequential updates",
+          {
+            error: txError?.message,
+          },
+        );
+
+        const officer = await this.officerRepository.create({
+          ...createOfficerDto,
+          uniqueCode,
+        });
+
+        const updatedOfficeIds: string[] = [];
+        try {
+          for (const officeId of officeIds) {
+            await this.officeRepository.addOfficer(
+              officeId,
+              String(officer._id),
+            );
+            updatedOfficeIds.push(officeId);
+          }
+        } catch (linkError: any) {
+          // Roll back to avoid leaving drift in either direction.
+          for (const officeId of updatedOfficeIds) {
+            try {
+              await this.officeRepository.removeOfficer(
+                officeId,
+                String(officer._id),
+              );
+            } catch {
+              // ignore
+            }
+          }
+          try {
+            await this.officerRepository.delete(String(officer._id));
+          } catch {
+            // ignore
+          }
+          throw linkError;
+        }
+
+        this.logger.info("Officer created successfully (sequential)", {
+          officerId: officer._id,
+        });
+        return officer;
+      } finally {
+        if (session) {
+          session.endSession();
+        }
+      }
     } catch (error: any) {
       this.logger.error("Officer creation failed", error.stack, {
         error: error.message,
@@ -111,7 +189,7 @@ export class OfficerService {
 
   async updateOfficer(
     id: string,
-    updateData: Partial<IOfficer>
+    updateData: Partial<IOfficer>,
   ): Promise<IOfficer> {
     try {
       this.logger.info("Updating officer", { officerId: id, updateData });
@@ -151,7 +229,7 @@ export class OfficerService {
 
   async registerFingerprint(
     officerId: string,
-    fingerprintData: string
+    fingerprintData: string,
   ): Promise<IOfficer> {
     try {
       this.logger.info("Registering fingerprint", { officerId });

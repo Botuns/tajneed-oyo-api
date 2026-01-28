@@ -9,4 +9,5 @@ export declare class OfficeController {
     updateOffice: (req: Request, res: Response) => Promise<void>;
     deleteOffice: (req: Request, res: Response) => Promise<void>;
     addOfficerToOffice: (req: Request, res: Response) => Promise<void>;
+    removeOfficerFromOffice: (req: Request, res: Response) => Promise<void>;
 }

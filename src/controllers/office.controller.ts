@@ -89,7 +89,7 @@ export class OfficeController {
         res
           .status(404)
           .json(
-            ApiResponse.error("Office not found", [], ResponseStatus.ERROR)
+            ApiResponse.error("Office not found", [], ResponseStatus.ERROR),
           );
         return;
       }
@@ -125,7 +125,7 @@ export class OfficeController {
         res
           .status(404)
           .json(
-            ApiResponse.error("Office not found", [], ResponseStatus.ERROR)
+            ApiResponse.error("Office not found", [], ResponseStatus.ERROR),
           );
         return;
       }
@@ -156,7 +156,7 @@ export class OfficeController {
         res
           .status(404)
           .json(
-            ApiResponse.error("Office not found", [], ResponseStatus.ERROR)
+            ApiResponse.error("Office not found", [], ResponseStatus.ERROR),
           );
         return;
       }
@@ -182,7 +182,7 @@ export class OfficeController {
       res
         .status(200)
         .json(
-          ApiResponse.success(office, "Officer added to office successfully")
+          ApiResponse.success(office, "Officer added to office successfully"),
         );
     } catch (error: any) {
       this.logger.error("Add officer to office request failed", error.stack, {
@@ -195,8 +195,58 @@ export class OfficeController {
         res
           .status(404)
           .json(
-            ApiResponse.error("Office not found", [], ResponseStatus.ERROR)
+            ApiResponse.error("Office not found", [], ResponseStatus.ERROR),
           );
+        return;
+      }
+
+      res
+        .status(error.statusCode || 500)
+        .json(ApiResponse.error(error.message));
+    }
+  };
+
+  removeOfficerFromOffice = async (
+    req: Request,
+    res: Response,
+  ): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { officerId }: AddOfficerToOfficeDto = req.body;
+
+      this.logger.info("Received remove officer from office request", {
+        officeId: id,
+        officerId,
+      });
+
+      const office = await this.officeService.removeOfficerFromOffice(
+        id,
+        officerId,
+      );
+
+      res
+        .status(200)
+        .json(
+          ApiResponse.success(
+            office,
+            "Officer removed from office successfully",
+          ),
+        );
+    } catch (error: any) {
+      this.logger.error(
+        "Remove officer from office request failed",
+        error.stack,
+        {
+          officeId: req.params.id,
+          officerId: req.body.officerId,
+          error: error.message,
+        },
+      );
+
+      if (error.statusCode === 404) {
+        res
+          .status(404)
+          .json(ApiResponse.error(error.message, [], ResponseStatus.ERROR));
         return;
       }
 

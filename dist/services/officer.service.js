@@ -9,6 +9,7 @@ const office_repository_1 = require("../repositories/office.repository");
 const custom_error_1 = require("../utils/custom.error");
 const logger_1 = require("../utils/logger");
 const crypto_1 = __importDefault(require("crypto"));
+const mongoose_1 = __importDefault(require("mongoose"));
 class OfficerService {
     officerRepository;
     officeRepository;
@@ -44,14 +45,76 @@ class OfficerService {
                 throw new custom_error_1.CustomError("Officer with this email already exists", 400);
             }
             const uniqueCode = await this.generateUniqueCode();
-            const officer = await this.officerRepository.create({
-                ...createOfficerDto,
-                uniqueCode,
-            });
-            this.logger.info("Officer created successfully", {
-                officerId: officer._id,
-            });
-            return officer;
+            const officeIds = createOfficerDto.offices ?? [];
+            // Best-effort atomic create + bidirectional linkage.
+            let session = null;
+            try {
+                session = await mongoose_1.default.startSession();
+                session.startTransaction();
+                const officer = await this.officerRepository.create({
+                    ...createOfficerDto,
+                    uniqueCode,
+                });
+                for (const officeId of officeIds) {
+                    await this.officeRepository.addOfficer(officeId, String(officer._id), session);
+                }
+                await session.commitTransaction();
+                this.logger.info("Officer created successfully", {
+                    officerId: officer._id,
+                });
+                return officer;
+            }
+            catch (txError) {
+                if (session) {
+                    try {
+                        await session.abortTransaction();
+                    }
+                    catch {
+                        // ignore
+                    }
+                }
+                this.logger.warn("Transaction failed; falling back to sequential updates", {
+                    error: txError?.message,
+                });
+                const officer = await this.officerRepository.create({
+                    ...createOfficerDto,
+                    uniqueCode,
+                });
+                const updatedOfficeIds = [];
+                try {
+                    for (const officeId of officeIds) {
+                        await this.officeRepository.addOfficer(officeId, String(officer._id));
+                        updatedOfficeIds.push(officeId);
+                    }
+                }
+                catch (linkError) {
+                    // Roll back to avoid leaving drift in either direction.
+                    for (const officeId of updatedOfficeIds) {
+                        try {
+                            await this.officeRepository.removeOfficer(officeId, String(officer._id));
+                        }
+                        catch {
+                            // ignore
+                        }
+                    }
+                    try {
+                        await this.officerRepository.delete(String(officer._id));
+                    }
+                    catch {
+                        // ignore
+                    }
+                    throw linkError;
+                }
+                this.logger.info("Officer created successfully (sequential)", {
+                    officerId: officer._id,
+                });
+                return officer;
+            }
+            finally {
+                if (session) {
+                    session.endSession();
+                }
+            }
         }
         catch (error) {
             this.logger.error("Officer creation failed", error.stack, {

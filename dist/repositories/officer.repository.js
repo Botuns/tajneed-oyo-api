@@ -14,10 +14,15 @@ class OfficerRepository extends BaseRepository_1.BaseRepository {
     async findByFingerprint(fingerprint) {
         return this.model.findOne({ fingerprint, isDeleted: false }).exec();
     }
-    async addToOffice(officerId, officeId) {
+    async addToOffice(officerId, officeId, session) {
         return await this.model.findOneAndUpdate({ _id: officerId, isDeleted: false }, {
             $addToSet: { offices: officeId },
-        }, { new: true });
+        }, { new: true, session });
+    }
+    async removeFromOffice(officerId, officeId, session) {
+        return await this.model.findOneAndUpdate({ _id: officerId, isDeleted: false }, {
+            $pull: { offices: officeId },
+        }, { new: true, session });
     }
     async count(query = {}) {
         try {

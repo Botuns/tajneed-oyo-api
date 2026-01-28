@@ -6,13 +6,19 @@ const custom_error_1 = require("../utils/custom.error");
 const logger_1 = require("../utils/logger");
 const enums_1 = require("../enums");
 const office_repository_1 = require("../repositories/office.repository");
+const attendance_repository_1 = require("../repositories/attendance.repository");
+const repositories_1 = require("../repositories");
 class MeetingService {
     meetingRepository;
     officeRepository;
+    attendanceRepository;
+    officerRepository;
     logger;
     constructor() {
         this.meetingRepository = new meeting_repository_1.MeetingRepository();
         this.officeRepository = new office_repository_1.OfficeRepository();
+        this.attendanceRepository = new attendance_repository_1.AttendanceRepository();
+        this.officerRepository = new repositories_1.OfficerRepository();
         this.logger = new logger_1.Logger("MeetingService");
     }
     async createMeeting(meetingData) {
@@ -58,8 +64,37 @@ class MeetingService {
                 this.logger.warn("Meeting not found", { meetingId: id });
                 throw new custom_error_1.CustomError("Meeting not found", 404);
             }
-            this.logger.info("Meeting fetched successfully", { meetingId: id });
-            return meeting;
+            // Enrich meeting details with the list of officers who have checked in.
+            const checkedInAttendances = await this.attendanceRepository.findCheckedInOfficersByMeeting(id);
+            const officerIds = Array.from(new Set(checkedInAttendances.map((a) => String(a.userId))));
+            const officers = officerIds.length
+                ? await this.officerRepository.find({
+                    _id: { $in: officerIds },
+                    isDeleted: false,
+                })
+                : [];
+            const officersById = new Map(officers.map((o) => [String(o._id), o]));
+            const checkedInOfficers = checkedInAttendances
+                .map((attendance) => {
+                const officer = officersById.get(String(attendance.userId));
+                if (!officer)
+                    return null;
+                return {
+                    id: officer.id ?? String(officer._id),
+                    name: `${officer.firstName ?? ""} ${officer.lastName ?? ""}`.trim(),
+                    email: officer.email,
+                };
+            })
+                .filter(Boolean);
+            this.logger.info("Meeting fetched successfully", {
+                meetingId: id,
+                checkedInOfficers: checkedInOfficers.length,
+            });
+            return {
+                ...(meeting.toObject ? meeting.toObject() : meeting),
+                checkedInOfficers,
+                totalCheckedIn: checkedInOfficers.length,
+            };
         }
         catch (error) {
             this.logger.error("Failed to fetch meeting", error.stack, {

@@ -35,8 +35,19 @@ const auth_middleware_1 = require("../middlewares/auth.middleware");
  *         officers:
  *           type: array
  *           items:
- *             type: string
- *           description: Array of officer IDs assigned to this office
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: Officer ID
+ *               name:
+ *                 type: string
+ *                 description: Officer full name
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Officer email
+ *           description: Array of officers assigned to this office (summary)
  *         totalOfficers:
  *           type: integer
  *           description: Total number of officers in the office
@@ -59,7 +70,10 @@ const auth_middleware_1 = require("../middlewares/auth.middleware");
  *         name: "Finance Department"
  *         email: "finance@tajneed.org"
  *         description: "Handles all financial matters"
- *         officers: ["507f1f77bcf86cd799439012"]
+ *         officers:
+ *           - id: "507f1f77bcf86cd799439012"
+ *             name: "Jane Doe"
+ *             email: "jane.doe@tajneed.org"
  *         totalOfficers: 5
  *         responsibilities: ["Budget management", "Financial reporting"]
  *         isDeleted: false
@@ -329,3 +343,44 @@ exports.officeRouter.delete("/:id", auth_middleware_1.isAdmin, officeController.
  *         description: Office or officer not found
  */
 exports.officeRouter.post("/:id/officers", auth_middleware_1.isAdmin, (0, auth_middleware_1.validateRequest)(DTOs_1.AddOfficerToOfficeDto), officeController.addOfficerToOffice);
+/**
+ * @swagger
+ * /offices/{id}/officers:
+ *   delete:
+ *     summary: Remove an officer from an office
+ *     tags: [Offices]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The office ID (MongoDB ObjectId)
+ *         example: "507f1f77bcf86cd799439011"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/AddOfficerToOfficeDto'
+ *     responses:
+ *       200:
+ *         description: Officer removed from office successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   $ref: '#/components/schemas/Office'
+ *       401:
+ *         description: Unauthorized - Admin access required
+ *       404:
+ *         description: Office or officer not found
+ */
+exports.officeRouter.delete("/:id/officers", auth_middleware_1.isAdmin, (0, auth_middleware_1.validateRequest)(DTOs_1.AddOfficerToOfficeDto), officeController.removeOfficerFromOffice);

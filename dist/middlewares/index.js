@@ -20,7 +20,11 @@ class Middleware {
     static setup(app) {
         // Security middleware
         app.use((0, cors_1.default)({
-            origin: "http://localhost:3001",
+            origin: [
+                "http://localhost:3000",
+                "http://localhost:3001",
+                /\.vercel\.app$/,
+            ],
             methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
             credentials: true,
         }));

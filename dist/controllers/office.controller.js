@@ -165,5 +165,35 @@ class OfficeController {
                 .json(api_response_1.ApiResponse.error(error.message));
         }
     };
+    removeOfficerFromOffice = async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { officerId } = req.body;
+            this.logger.info("Received remove officer from office request", {
+                officeId: id,
+                officerId,
+            });
+            const office = await this.officeService.removeOfficerFromOffice(id, officerId);
+            res
+                .status(200)
+                .json(api_response_1.ApiResponse.success(office, "Officer removed from office successfully"));
+        }
+        catch (error) {
+            this.logger.error("Remove officer from office request failed", error.stack, {
+                officeId: req.params.id,
+                officerId: req.body.officerId,
+                error: error.message,
+            });
+            if (error.statusCode === 404) {
+                res
+                    .status(404)
+                    .json(api_response_1.ApiResponse.error(error.message, [], api_response_1.ResponseStatus.ERROR));
+                return;
+            }
+            res
+                .status(error.statusCode || 500)
+                .json(api_response_1.ApiResponse.error(error.message));
+        }
+    };
 }
 exports.OfficeController = OfficeController;

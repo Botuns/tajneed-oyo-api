@@ -27,8 +27,19 @@
  *         officers:
  *           type: array
  *           items:
- *             type: string
- *           description: Array of officer IDs assigned to this office
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: Officer ID
+ *               name:
+ *                 type: string
+ *                 description: Officer full name
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Officer email
+ *           description: Array of officers assigned to this office (summary)
  *         totalOfficers:
  *           type: integer
  *           description: Total number of officers in the office
@@ -51,7 +62,10 @@
  *         name: "Finance Department"
  *         email: "finance@tajneed.org"
  *         description: "Handles all financial matters"
- *         officers: ["507f1f77bcf86cd799439012"]
+ *         officers:
+ *           - id: "507f1f77bcf86cd799439012"
+ *             name: "Jane Doe"
+ *             email: "jane.doe@tajneed.org"
  *         totalOfficers: 5
  *         responsibilities: ["Budget management", "Financial reporting"]
  *         isDeleted: false

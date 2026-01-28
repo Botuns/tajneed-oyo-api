@@ -1,6 +1,7 @@
 import { IOffice } from "../interfaces";
 import { Office } from "../models/office.model";
 import { BaseRepository } from "./base/BaseRepository";
+import mongoose from "mongoose";
 
 export class OfficeRepository extends BaseRepository<IOffice> {
   constructor() {
@@ -13,29 +14,49 @@ export class OfficeRepository extends BaseRepository<IOffice> {
 
   async addOfficer(
     officeId: string,
-    officerId: string
+    officerId: string,
+    session?: mongoose.ClientSession,
   ): Promise<IOffice | null> {
+    const officerObjectId = new mongoose.Types.ObjectId(officerId);
     return await this.model.findOneAndUpdate(
       { _id: officeId, isDeleted: false },
-      {
-        $addToSet: { officers: officerId },
-        $inc: { totalOfficers: 1 },
-      },
-      { new: true }
+      [
+        {
+          $set: {
+            officers: { $setUnion: ["$officers", [officerObjectId]] },
+          },
+        },
+        {
+          $set: {
+            totalOfficers: { $size: "$officers" },
+          },
+        },
+      ],
+      { new: true, session },
     );
   }
 
   async removeOfficer(
     officeId: string,
-    officerId: string
+    officerId: string,
+    session?: mongoose.ClientSession,
   ): Promise<IOffice | null> {
+    const officerObjectId = new mongoose.Types.ObjectId(officerId);
     return await this.model.findOneAndUpdate(
       { _id: officeId, isDeleted: false },
-      {
-        $pull: { officers: officerId },
-        $inc: { totalOfficers: -1 },
-      },
-      { new: true }
+      [
+        {
+          $set: {
+            officers: { $setDifference: ["$officers", [officerObjectId]] },
+          },
+        },
+        {
+          $set: {
+            totalOfficers: { $size: "$officers" },
+          },
+        },
+      ],
+      { new: true, session },
     );
   }
 }

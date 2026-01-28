@@ -1,6 +1,7 @@
 import { IOfficer } from "../interfaces";
 import { Officer } from "../models/officer.model";
 import { BaseRepository } from "./base/BaseRepository";
+import mongoose from "mongoose";
 
 // methods to create --- find by uniquecpode, find by fingerprint, addtooffice
 export class OfficerRepository extends BaseRepository<IOfficer> {
@@ -17,14 +18,29 @@ export class OfficerRepository extends BaseRepository<IOfficer> {
   }
   async addToOffice(
     officerId: string,
-    officeId: string
+    officeId: string,
+    session?: mongoose.ClientSession,
   ): Promise<IOfficer | null> {
     return await this.model.findOneAndUpdate(
       { _id: officerId, isDeleted: false },
       {
         $addToSet: { offices: officeId },
       },
-      { new: true }
+      { new: true, session },
+    );
+  }
+
+  async removeFromOffice(
+    officerId: string,
+    officeId: string,
+    session?: mongoose.ClientSession,
+  ): Promise<IOfficer | null> {
+    return await this.model.findOneAndUpdate(
+      { _id: officerId, isDeleted: false },
+      {
+        $pull: { offices: officeId },
+      },
+      { new: true, session },
     );
   }
   async count(query: Record<string, any> = {}): Promise<number> {

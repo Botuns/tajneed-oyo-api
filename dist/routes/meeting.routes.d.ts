@@ -43,6 +43,22 @@
  *           items:
  *             type: string
  *           description: Array of expected attendee officer IDs
+ *         checkedInOfficers:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *           description: Officers who have checked in for this meeting (summary)
+ *         totalCheckedIn:
+ *           type: integer
+ *           description: Total number of checked-in officers
  *         status:
  *           type: string
  *           enum: [SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED]
@@ -66,6 +82,11 @@
  *         location: "Main Hall"
  *         organizer: "507f1f77bcf86cd799439012"
  *         expectedAttendees: ["507f1f77bcf86cd799439013", "507f1f77bcf86cd799439014"]
+ *         checkedInOfficers:
+ *           - id: "507f1f77bcf86cd799439013"
+ *             name: "Jane Doe"
+ *             email: "jane.doe@tajneed.org"
+ *         totalCheckedIn: 1
  *         status: "SCHEDULED"
  *         isDeleted: false
  *     CreateMeetingDto:

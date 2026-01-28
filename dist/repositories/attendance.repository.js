@@ -20,6 +20,17 @@ class AttendanceRepository extends BaseRepository_1.BaseRepository {
         })
             .populate("userId");
     }
+    async findCheckedInOfficersByMeeting(meetingId) {
+        return await this.model
+            .find({
+            meetingId,
+            isDeleted: false,
+            userType: enums_1.UserType.OFFICER,
+            status: { $in: [enums_1.AttendanceStatus.PRESENT, enums_1.AttendanceStatus.LATE] },
+        })
+            .sort({ checkInTime: 1 })
+            .exec();
+    }
     async checkOut(attendanceId) {
         return await this.model.findOneAndUpdate({ _id: attendanceId, isDeleted: false }, {
             $set: {
