@@ -43,6 +43,13 @@ const OfficerSchema = new mongoose_1.Schema({
     phoneNumber: { type: String, required: true },
     fingerprint: { type: String },
     uniqueCode: { type: String, unique: true, sparse: true },
+    position: { type: String, required: true }, // e.g., "State Qaid", "Nazim Tabligh"
+    positionType: {
+        type: String,
+        enum: enums_1.PositionType,
+        required: true,
+    }, // EXECUTIVE, HEAD, ASSISTANT, SPECIAL
+    dila: { type: String, required: true }, // Local jamaat/chapter
     offices: [{ type: mongoose_1.Schema.Types.ObjectId, ref: "Office" }],
     userType: { type: String, enum: enums_1.UserType, default: enums_1.UserType.OFFICER },
     isAdmin: { type: Boolean, default: false },

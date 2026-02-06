@@ -35,6 +35,16 @@ const officer_dto_1 = require("../lib/types/DTOs/officer.dto");
  *         phoneNumber:
  *           type: string
  *           description: Officer's phone number
+ *         position:
+ *           type: string
+ *           description: Officer's position title (e.g., "State Qaid", "Nazim Tabligh")
+ *         positionType:
+ *           type: string
+ *           enum: [EXECUTIVE, HEAD, ASSISTANT, SPECIAL]
+ *           description: Type of position (EXECUTIVE for leadership, HEAD for Nazim, ASSISTANT for Naib, SPECIAL for others)
+ *         dila:
+ *           type: string
+ *           description: Local jamaat/chapter (e.g., "Ibadan", "Monatan")
  *         uniqueCode:
  *           type: string
  *           description: Auto-generated unique code for attendance
@@ -72,14 +82,17 @@ const officer_dto_1 = require("../lib/types/DTOs/officer.dto");
  *           format: date-time
  *       example:
  *         _id: "507f1f77bcf86cd799439011"
- *         firstName: "John"
- *         lastName: "Doe"
- *         email: "john.doe@example.com"
+ *         firstName: "Badejo"
+ *         lastName: "Taofeek"
+ *         email: "badejo.taofeek@mkaoyoilaqa.org"
  *         phoneNumber: "+2348012345678"
- *         uniqueCode: "OFC-ABC123"
+ *         position: "State Qaid (President)"
+ *         positionType: "EXECUTIVE"
+ *         dila: "Ibadan"
+ *         uniqueCode: "MKA-OYO-001"
  *         userType: "OFFICER"
- *         isAdmin: false
- *         tenureStart: "2024-01-01T00:00:00Z"
+ *         isAdmin: true
+ *         tenureStart: "2025-01-01T00:00:00Z"
  *         offices: ["507f1f77bcf86cd799439012"]
  *     CreateOfficerDto:
  *       type: object
@@ -88,21 +101,37 @@ const officer_dto_1 = require("../lib/types/DTOs/officer.dto");
  *         - lastName
  *         - email
  *         - phoneNumber
+ *         - position
+ *         - positionType
+ *         - dila
  *         - tenureStart
  *       properties:
  *         firstName:
  *           type: string
- *           example: "John"
+ *           example: "Badejo"
  *         lastName:
  *           type: string
- *           example: "Doe"
+ *           example: "Taofeek"
  *         email:
  *           type: string
  *           format: email
- *           example: "john.doe@example.com"
+ *           example: "badejo.taofeek@mkaoyoilaqa.org"
  *         phoneNumber:
  *           type: string
  *           example: "+2348012345678"
+ *         position:
+ *           type: string
+ *           description: Position title
+ *           example: "State Qaid (President)"
+ *         positionType:
+ *           type: string
+ *           enum: [EXECUTIVE, HEAD, ASSISTANT, SPECIAL]
+ *           description: Type of position
+ *           example: "EXECUTIVE"
+ *         dila:
+ *           type: string
+ *           description: Local jamaat/chapter
+ *           example: "Ibadan"
  *         offices:
  *           type: array
  *           items:
@@ -119,27 +148,36 @@ const officer_dto_1 = require("../lib/types/DTOs/officer.dto");
  *         tenureStart:
  *           type: string
  *           format: date-time
- *           example: "2024-01-01T00:00:00Z"
+ *           example: "2025-01-01T00:00:00Z"
  *         tenureEnd:
  *           type: string
  *           format: date-time
- *           example: "2025-12-31T23:59:59Z"
+ *           example: "2026-12-31T23:59:59Z"
  *     UpdateOfficerDto:
  *       type: object
  *       properties:
  *         firstName:
  *           type: string
- *           example: "John"
+ *           example: "Badejo"
  *         lastName:
  *           type: string
- *           example: "Doe"
+ *           example: "Taofeek"
  *         email:
  *           type: string
  *           format: email
- *           example: "john.updated@example.com"
+ *           example: "badejo.taofeek@mkaoyoilaqa.org"
  *         phoneNumber:
  *           type: string
  *           example: "+2348012345678"
+ *         position:
+ *           type: string
+ *           example: "State Qaid (President)"
+ *         positionType:
+ *           type: string
+ *           enum: [EXECUTIVE, HEAD, ASSISTANT, SPECIAL]
+ *         dila:
+ *           type: string
+ *           example: "Ibadan"
  *         offices:
  *           type: array
  *           items:

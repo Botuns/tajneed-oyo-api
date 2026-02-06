@@ -244,8 +244,14 @@ class OfficeService {
         try {
             this.logger.info("Removing officer from office", { officeId, officerId });
             const [officeExists, officerExists] = await Promise.all([
-                this.officeRepository.findOne({ _id: officeId, isDeleted: false }),
-                this.officerRepository.findOne({ _id: officerId, isDeleted: false }),
+                this.officeRepository.findOne({
+                    _id: officeId,
+                    isDeleted: false,
+                }),
+                this.officerRepository.findOne({
+                    _id: officerId,
+                    isDeleted: false,
+                }),
             ]);
             if (!officeExists) {
                 this.logger.warn("Office not found while removing officer", {

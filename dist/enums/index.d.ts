@@ -39,3 +39,9 @@ export declare enum AttendanceStatus {
     LATE = "LATE",
     EXCUSED = "EXCUSED"
 }
+export declare enum PositionType {
+    EXECUTIVE = "EXECUTIVE",// State Qaid, Naib State Qaid, Mut'amad, Muavin Qaid
+    HEAD = "HEAD",// Nazim (department heads)
+    ASSISTANT = "ASSISTANT",// Naib Nazim (assistants/deputies)
+    SPECIAL = "SPECIAL"
+}

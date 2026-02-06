@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "typeRoots": ["./node_modules/@types", "./types"],
-    "types": ["express"],
+    "types": ["express", "node", "pdfkit"],
 
     "declaration": true,
     /* Visit https://aka.ms/tsconfig to read more about this file */

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import path from "path";
 import fs from "fs";
-import PDFDocument from "pdfkit";
+import PDFDocument = require("pdfkit");
 
 // Load environment variables
 dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });

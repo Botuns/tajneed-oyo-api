@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AttendanceStatus = exports.MeetingStatus = exports.Months = exports.AuxiliaryType = exports.AttendanceType = exports.UserType = void 0;
+exports.PositionType = exports.AttendanceStatus = exports.MeetingStatus = exports.Months = exports.AuxiliaryType = exports.AttendanceType = exports.UserType = void 0;
 // enums for user type
 var UserType;
 (function (UserType) {
@@ -52,3 +52,11 @@ var AttendanceStatus;
     AttendanceStatus["LATE"] = "LATE";
     AttendanceStatus["EXCUSED"] = "EXCUSED";
 })(AttendanceStatus || (exports.AttendanceStatus = AttendanceStatus = {}));
+// Enum for officer position types
+var PositionType;
+(function (PositionType) {
+    PositionType["EXECUTIVE"] = "EXECUTIVE";
+    PositionType["HEAD"] = "HEAD";
+    PositionType["ASSISTANT"] = "ASSISTANT";
+    PositionType["SPECIAL"] = "SPECIAL";
+})(PositionType || (exports.PositionType = PositionType = {}));

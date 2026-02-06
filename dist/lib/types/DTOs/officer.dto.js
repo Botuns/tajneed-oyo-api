@@ -6,6 +6,9 @@ class CreateOfficerDto {
     lastName;
     email;
     phoneNumber;
+    position;
+    positionType;
+    dila;
     offices;
     userType;
     isAdmin;
@@ -18,6 +21,9 @@ class UpdateOfficerDto {
     lastName;
     email;
     phoneNumber;
+    position;
+    positionType;
+    dila;
     offices;
     userType;
     isAdmin;

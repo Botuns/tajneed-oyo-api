@@ -206,7 +206,7 @@ async function seedOfficers() {
     // Create office email to ID map
     const officeEmailToId: Record<string, mongoose.Types.ObjectId> = {};
     offices.forEach((office) => {
-      officeEmailToId[office.email] = office._id as mongoose.Types.ObjectId;
+      officeEmailToId[office.email] = new mongoose.Types.ObjectId(String(office._id));
     });
 
     // Delete all existing officers (hard delete)

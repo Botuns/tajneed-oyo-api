@@ -1,4 +1,4 @@
-import { UserType } from "../enums";
+import { PositionType, UserType } from "../enums";
 import { BaseEntity } from "./base.inteface";
 export interface IOfficer extends BaseEntity {
     firstName: string;
@@ -7,6 +7,9 @@ export interface IOfficer extends BaseEntity {
     phoneNumber: string;
     fingerprint?: string;
     uniqueCode: string;
+    position: string;
+    positionType: PositionType;
+    dila: string;
     offices: string[];
     userType: UserType;
     isAdmin: boolean;
