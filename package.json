@@ -12,7 +12,9 @@
     "test:watch": "jest --watch",
     "seed:offices": "npx tsx src/scripts/seed-offices.ts",
     "seed:officers": "npx tsx src/scripts/seed-officers.ts",
-    "seed:all": "npx tsx src/scripts/seed-offices.ts && npx tsx src/scripts/seed-officers.ts"
+    "seed:all": "npx tsx src/scripts/seed-offices.ts && npx tsx src/scripts/seed-officers.ts",
+    "delete:meetings": "npx tsx src/scripts/delete-meetings.ts",
+    "generate:pdf": "npx tsx src/scripts/generate-officer-codes-pdf.ts"
   },
   "author": "",
   "license": "ISC",
@@ -25,6 +27,7 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.10.2",
+    "@types/pdfkit": "^0.13.8",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "@typescript-eslint/eslint-plugin": "^8.12.2",
@@ -55,6 +58,7 @@
     "mongoose": "^8.8.4",
     "morgan": "^1.10.0",
     "node-cron": "^4.2.1",
+    "pdfkit": "^0.15.0",
     "nodemailer": "^7.0.10",
     "redis": "^4.7.0",
     "swagger-jsdoc": "^6.2.8",
