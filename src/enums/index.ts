@@ -46,3 +46,11 @@ export enum AttendanceStatus {
   LATE = "LATE",
   EXCUSED = "EXCUSED",
 }
+
+// Enum for officer position types
+export enum PositionType {
+  EXECUTIVE = "EXECUTIVE", // State Qaid, Naib State Qaid, Mut'amad, Muavin Qaid
+  HEAD = "HEAD", // Nazim (department heads)
+  ASSISTANT = "ASSISTANT", // Naib Nazim (assistants/deputies)
+  SPECIAL = "SPECIAL", // Muhasib, Murabiy, etc.
+}

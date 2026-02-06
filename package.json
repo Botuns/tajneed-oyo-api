@@ -9,7 +9,10 @@
     "build": "tsc --project ./",
     "lint": "eslint ./src/**/.ts",
     "test": "jest --passWithNoTests",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "seed:offices": "npx tsx src/scripts/seed-offices.ts",
+    "seed:officers": "npx tsx src/scripts/seed-officers.ts",
+    "seed:all": "npx tsx src/scripts/seed-offices.ts && npx tsx src/scripts/seed-officers.ts"
   },
   "author": "",
   "license": "ISC",
