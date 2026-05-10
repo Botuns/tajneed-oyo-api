@@ -19,6 +19,7 @@ const OfficerSchema = new Schema<IOfficer>(
     offices: [{ type: Schema.Types.ObjectId, ref: "Office" }],
     userType: { type: String, enum: UserType, default: UserType.OFFICER },
     isAdmin: { type: Boolean, default: false },
+    isMulk: { type: Boolean, default: false, index: true },
     tenureStart: { type: Date, required: true },
     tenureEnd: { type: Date },
     isDeleted: { type: Boolean, default: false },

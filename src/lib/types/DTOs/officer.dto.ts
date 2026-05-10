@@ -11,6 +11,7 @@ export class CreateOfficerDto {
   offices?: string[];
   userType?: UserType;
   isAdmin?: boolean;
+  isMulk?: boolean;
   tenureStart!: Date;
   tenureEnd?: Date;
 }
@@ -26,6 +27,7 @@ export class UpdateOfficerDto {
   offices?: string[];
   userType?: UserType;
   isAdmin?: boolean;
+  isMulk?: boolean;
   tenureStart?: Date;
   tenureEnd?: Date;
 }

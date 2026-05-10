@@ -239,6 +239,164 @@ export class AttendanceController {
     }
   };
 
+  checkInMulkByUniqueCode = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { meetingId, uniqueCode } = req.body;
+      this.logger.info("Received mulk check-in by unique code", { meetingId });
+
+      const attendance = await this.attendanceService.checkInMulkByUniqueCode(
+        meetingId,
+        uniqueCode
+      );
+
+      res
+        .status(201)
+        .json(ApiResponse.success(attendance, "Mulk check-in successful"));
+    } catch (error: any) {
+      this.logger.error("Mulk check-in by unique code failed", error.stack, {
+        error: error.message,
+      });
+      res
+        .status(error.statusCode || 500)
+        .json(ApiResponse.error(error.message));
+    }
+  };
+
+  checkInMulkByFingerprint = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { meetingId, fingerprint } = req.body;
+      this.logger.info("Received mulk check-in by fingerprint", { meetingId });
+
+      const attendance = await this.attendanceService.checkInMulkByFingerprint(
+        meetingId,
+        fingerprint
+      );
+
+      res
+        .status(201)
+        .json(
+          ApiResponse.success(
+            attendance,
+            "Mulk check-in by fingerprint successful"
+          )
+        );
+    } catch (error: any) {
+      this.logger.error("Mulk check-in by fingerprint failed", error.stack, {
+        error: error.message,
+      });
+      res
+        .status(error.statusCode || 500)
+        .json(ApiResponse.error(error.message));
+    }
+  };
+
+  checkInGuest = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const {
+        meetingId,
+        firstName,
+        lastName,
+        email,
+        phoneNumber,
+        auxiliary,
+        state,
+        purpose,
+      } = req.body;
+
+      this.logger.info("Received guest check-in", { meetingId, phoneNumber });
+
+      const attendance = await this.attendanceService.checkInGuest({
+        meetingId,
+        firstName,
+        lastName,
+        email,
+        phoneNumber,
+        auxiliary,
+        state,
+        purpose,
+      });
+
+      res
+        .status(201)
+        .json(ApiResponse.success(attendance, "Guest check-in successful"));
+    } catch (error: any) {
+      this.logger.error("Guest check-in failed", error.stack, {
+        error: error.message,
+      });
+      res
+        .status(error.statusCode || 500)
+        .json(ApiResponse.error(error.message));
+    }
+  };
+
+  getMeetingBreakdown = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { meetingId } = req.params;
+      this.logger.info("Received meeting breakdown request", { meetingId });
+
+      const breakdown = await this.attendanceService.getMeetingBreakdown(
+        meetingId
+      );
+
+      res
+        .status(200)
+        .json(
+          ApiResponse.success(
+            breakdown,
+            "Meeting attendance breakdown retrieved successfully"
+          )
+        );
+    } catch (error: any) {
+      this.logger.error("Get meeting breakdown failed", error.stack, {
+        error: error.message,
+      });
+      res
+        .status(error.statusCode || 500)
+        .json(ApiResponse.error(error.message));
+    }
+  };
+
+  getMeetingStatsBreakdown = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { meetingId } = req.params;
+      this.logger.info("Received meeting stats breakdown request", {
+        meetingId,
+      });
+
+      const stats = await this.attendanceService.getMeetingStatsBreakdown(
+        meetingId
+      );
+
+      res
+        .status(200)
+        .json(
+          ApiResponse.success(
+            stats,
+            "Meeting stats breakdown retrieved successfully"
+          )
+        );
+    } catch (error: any) {
+      this.logger.error("Get meeting stats breakdown failed", error.stack, {
+        error: error.message,
+      });
+      res
+        .status(error.statusCode || 500)
+        .json(ApiResponse.error(error.message));
+    }
+  };
+
   getOfficersAbsentForThreeMonths = async (
     req: Request,
     res: Response

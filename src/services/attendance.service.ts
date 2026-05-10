@@ -1,22 +1,93 @@
-import { IAttendance } from "../interfaces";
+import { IAttendance, IGuest, IOfficer } from "../interfaces";
 import { AttendanceRepository } from "../repositories/attendance.repository";
 import { OfficerRepository } from "../repositories/officer.repository";
 import { MeetingRepository } from "../repositories/meeting.repository";
+import { GuestRepository } from "../repositories/guest.repository";
 import { CustomError } from "../utils/custom.error";
 import { Logger } from "../utils/logger";
-import { AttendanceStatus, AttendanceType, UserType, Months } from "../enums";
+import {
+  AttendanceStatus,
+  AttendanceType,
+  UserType,
+  Months,
+  DILA_QAID_POSITION,
+  AttendanceRole,
+  AuxiliaryType,
+} from "../enums";
+
+interface CheckInGuestInput {
+  meetingId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  auxiliary: AuxiliaryType;
+  state: string;
+  purpose: string;
+}
+
+type RoleBuckets<T> = Record<AttendanceRole, T>;
 
 export class AttendanceService {
   private attendanceRepository: AttendanceRepository;
   private officerRepository: OfficerRepository;
   private meetingRepository: MeetingRepository;
+  private guestRepository: GuestRepository;
   private logger: Logger;
 
   constructor() {
     this.attendanceRepository = new AttendanceRepository();
     this.officerRepository = new OfficerRepository();
     this.meetingRepository = new MeetingRepository();
+    this.guestRepository = new GuestRepository();
     this.logger = new Logger("AttendanceService");
+  }
+
+  private currentMonth(): Months {
+    return new Date()
+      .toLocaleString("default", { month: "long" })
+      .toUpperCase() as Months;
+  }
+
+  private classifyOfficer(officer: IOfficer): AttendanceRole {
+    if (officer.isMulk) return AttendanceRole.MULK;
+    if (officer.position === DILA_QAID_POSITION) return AttendanceRole.DILA_QAID;
+    return AttendanceRole.OFFICER;
+  }
+
+  private async checkInOfficer(
+    meetingId: string,
+    officer: IOfficer,
+    attendanceType: AttendanceType
+  ): Promise<IAttendance> {
+    const meeting = await this.meetingRepository.findById(meetingId);
+    if (!meeting) {
+      throw new CustomError("Meeting not found", 404);
+    }
+
+    const existingAttendance = await this.attendanceRepository.findOne({
+      meetingId,
+      userId: officer._id.toString(),
+      isDeleted: false,
+    });
+    if (existingAttendance) {
+      throw new CustomError("Already checked in for this meeting", 400);
+    }
+
+    const now = new Date();
+    const attendance = await this.attendanceRepository.create({
+      meetingId,
+      userId: officer._id.toString(),
+      userType: UserType.OFFICER,
+      attendanceType,
+      meetingDate: meeting.date,
+      checkInTime: now,
+      month: this.currentMonth(),
+      verified: true,
+      status: AttendanceStatus.PRESENT,
+    });
+
+    return attendance;
   }
 
   async checkInByUniqueCode(
@@ -26,11 +97,6 @@ export class AttendanceService {
     try {
       this.logger.info("Check-in by unique code", { meetingId, uniqueCode });
 
-      const meeting = await this.meetingRepository.findById(meetingId);
-      if (!meeting) {
-        throw new CustomError("Meeting not found", 404);
-      }
-
       const officer = await this.officerRepository.findOne({
         uniqueCode,
         isDeleted: false,
@@ -39,40 +105,16 @@ export class AttendanceService {
         throw new CustomError("Officer not found with this unique code", 404);
       }
 
-      const existingAttendance = await this.attendanceRepository.findOne({
+      const attendance = await this.checkInOfficer(
         meetingId,
-        userId: officer._id.toString(),
-        isDeleted: false,
-      });
-
-      if (existingAttendance) {
-        throw new CustomError("Already checked in for this meeting", 400);
-      }
-
-      const now = new Date();
-      const monthName = now
-        .toLocaleString("default", {
-          month: "long",
-        })
-        .toUpperCase() as Months;
-
-      const attendance = await this.attendanceRepository.create({
-        meetingId,
-        userId: officer._id.toString(),
-        userType: UserType.OFFICER,
-        attendanceType: AttendanceType.UNIQUE_CODE,
-        meetingDate: meeting.date,
-        checkInTime: now,
-        month: monthName,
-        verified: true,
-        status: AttendanceStatus.PRESENT,
-      });
+        officer,
+        AttendanceType.UNIQUE_CODE
+      );
 
       this.logger.info("Check-in successful", {
         attendanceId: attendance._id,
         officerId: officer._id,
       });
-
       return attendance;
     } catch (error: any) {
       this.logger.error("Check-in failed", error.stack, {
@@ -89,11 +131,6 @@ export class AttendanceService {
     try {
       this.logger.info("Check-in by fingerprint", { meetingId });
 
-      const meeting = await this.meetingRepository.findById(meetingId);
-      if (!meeting) {
-        throw new CustomError("Meeting not found", 404);
-      }
-
       const officer = await this.officerRepository.findOne({
         fingerprint,
         isDeleted: false,
@@ -102,43 +139,162 @@ export class AttendanceService {
         throw new CustomError("Officer not found with this fingerprint", 404);
       }
 
-      const existingAttendance = await this.attendanceRepository.findOne({
+      const attendance = await this.checkInOfficer(
         meetingId,
-        userId: officer._id.toString(),
-        isDeleted: false,
-      });
-
-      if (existingAttendance) {
-        throw new CustomError("Already checked in for this meeting", 400);
-      }
-
-      const now = new Date();
-      const monthName = now
-        .toLocaleString("default", {
-          month: "long",
-        })
-        .toUpperCase() as Months;
-
-      const attendance = await this.attendanceRepository.create({
-        meetingId,
-        userId: officer._id.toString(),
-        userType: UserType.OFFICER,
-        attendanceType: AttendanceType.FINGERPRINT,
-        meetingDate: meeting.date,
-        checkInTime: now,
-        month: monthName,
-        verified: true,
-        status: AttendanceStatus.PRESENT,
-      });
+        officer,
+        AttendanceType.FINGERPRINT
+      );
 
       this.logger.info("Check-in by fingerprint successful", {
         attendanceId: attendance._id,
         officerId: officer._id,
       });
-
       return attendance;
     } catch (error: any) {
       this.logger.error("Check-in by fingerprint failed", error.stack, {
+        error: error.message,
+      });
+      throw error;
+    }
+  }
+
+  async checkInMulkByUniqueCode(
+    meetingId: string,
+    uniqueCode: string
+  ): Promise<IAttendance> {
+    try {
+      this.logger.info("Mulk check-in by unique code", { meetingId });
+
+      const officer = await this.officerRepository.findOne({
+        uniqueCode,
+        isDeleted: false,
+      });
+      if (!officer) {
+        throw new CustomError("No mulk member found with this unique code", 404);
+      }
+      if (!officer.isMulk) {
+        throw new CustomError(
+          "This code belongs to an officer, not a mulk member",
+          400
+        );
+      }
+
+      const attendance = await this.checkInOfficer(
+        meetingId,
+        officer,
+        AttendanceType.UNIQUE_CODE
+      );
+      this.logger.info("Mulk check-in successful", {
+        attendanceId: attendance._id,
+        officerId: officer._id,
+      });
+      return attendance;
+    } catch (error: any) {
+      this.logger.error("Mulk check-in failed", error.stack, {
+        error: error.message,
+      });
+      throw error;
+    }
+  }
+
+  async checkInMulkByFingerprint(
+    meetingId: string,
+    fingerprint: string
+  ): Promise<IAttendance> {
+    try {
+      this.logger.info("Mulk check-in by fingerprint", { meetingId });
+
+      const officer = await this.officerRepository.findOne({
+        fingerprint,
+        isDeleted: false,
+      });
+      if (!officer) {
+        throw new CustomError("No mulk member found with this fingerprint", 404);
+      }
+      if (!officer.isMulk) {
+        throw new CustomError(
+          "This fingerprint belongs to an officer, not a mulk member",
+          400
+        );
+      }
+
+      const attendance = await this.checkInOfficer(
+        meetingId,
+        officer,
+        AttendanceType.FINGERPRINT
+      );
+      this.logger.info("Mulk check-in by fingerprint successful", {
+        attendanceId: attendance._id,
+        officerId: officer._id,
+      });
+      return attendance;
+    } catch (error: any) {
+      this.logger.error("Mulk check-in by fingerprint failed", error.stack, {
+        error: error.message,
+      });
+      throw error;
+    }
+  }
+
+  async checkInGuest(input: CheckInGuestInput): Promise<IAttendance> {
+    try {
+      this.logger.info("Guest walk-in check-in", {
+        meetingId: input.meetingId,
+        phone: input.phoneNumber,
+      });
+
+      const meeting = await this.meetingRepository.findById(input.meetingId);
+      if (!meeting) {
+        throw new CustomError("Meeting not found", 404);
+      }
+
+      let guest: IGuest | null = await this.guestRepository.findByPhone(
+        input.phoneNumber
+      );
+      if (!guest) {
+        guest = await this.guestRepository.create({
+          firstName: input.firstName,
+          lastName: input.lastName,
+          email: input.email,
+          phoneNumber: input.phoneNumber,
+          auxiliary: input.auxiliary,
+          state: input.state,
+          purpose: input.purpose,
+        });
+      }
+
+      const existingAttendance = await this.attendanceRepository.findOne({
+        meetingId: input.meetingId,
+        userId: guest._id.toString(),
+        isDeleted: false,
+      });
+      if (existingAttendance) {
+        throw new CustomError(
+          "This guest has already checked in for this meeting",
+          400
+        );
+      }
+
+      const now = new Date();
+      const attendance = await this.attendanceRepository.create({
+        meetingId: input.meetingId,
+        userId: guest._id.toString(),
+        userType: UserType.GUEST,
+        attendanceType: AttendanceType.GUEST_DETAILS,
+        meetingDate: meeting.date,
+        checkInTime: now,
+        month: this.currentMonth(),
+        verified: true,
+        status: AttendanceStatus.PRESENT,
+      });
+
+      this.logger.info("Guest check-in successful", {
+        attendanceId: attendance._id,
+        guestId: guest._id,
+      });
+      return attendance;
+    } catch (error: any) {
+      this.logger.error("Guest check-in failed", error.stack, {
         error: error.message,
       });
       throw error;
@@ -224,12 +380,28 @@ export class AttendanceService {
         throw new CustomError("Meeting not found", 404);
       }
 
-      const now = new Date();
-      const monthName = now
-        .toLocaleString("default", {
-          month: "long",
-        })
-        .toUpperCase() as Months;
+      const officer = await this.officerRepository.findById(officerId);
+      if (!officer || officer.isDeleted) {
+        throw new CustomError("Officer not found", 404);
+      }
+
+      const existing = await this.attendanceRepository.findOne({
+        meetingId,
+        userId: officerId,
+        isDeleted: false,
+      });
+      if (existing) {
+        if (existing.status === AttendanceStatus.PRESENT) {
+          throw new CustomError(
+            "Officer has already checked in as PRESENT for this meeting",
+            400
+          );
+        }
+        throw new CustomError(
+          "Officer has already been marked for this meeting",
+          400
+        );
+      }
 
       const attendance = await this.attendanceRepository.create({
         meetingId,
@@ -237,8 +409,8 @@ export class AttendanceService {
         userType: UserType.OFFICER,
         attendanceType: AttendanceType.UNIQUE_CODE,
         meetingDate: meeting.date,
-        checkInTime: now,
-        month: monthName,
+        checkInTime: new Date(),
+        month: this.currentMonth(),
         verified: true,
         status: AttendanceStatus.ABSENT,
         remarks: remarks || "Did not attend meeting",
@@ -250,6 +422,111 @@ export class AttendanceService {
       return attendance;
     } catch (error: any) {
       this.logger.error("Failed to mark officer as absent", error.stack, {
+        error: error.message,
+      });
+      throw error;
+    }
+  }
+
+  async getMeetingBreakdown(meetingId: string) {
+    try {
+      this.logger.info("Fetching meeting breakdown", { meetingId });
+
+      const meeting = await this.meetingRepository.findById(meetingId);
+      if (!meeting) {
+        throw new CustomError("Meeting not found", 404);
+      }
+
+      const records = await this.attendanceRepository.findByMeeting(meetingId);
+
+      const buckets: RoleBuckets<IAttendance[]> = {
+        [AttendanceRole.OFFICER]: [],
+        [AttendanceRole.DILA_QAID]: [],
+        [AttendanceRole.MULK]: [],
+        [AttendanceRole.GUEST]: [],
+      };
+
+      for (const record of records) {
+        if (record.userType === UserType.GUEST) {
+          buckets[AttendanceRole.GUEST].push(record);
+          continue;
+        }
+        const officer = record.userId as unknown as IOfficer | null;
+        if (!officer) continue;
+        buckets[this.classifyOfficer(officer)].push(record);
+      }
+
+      return {
+        officers: buckets[AttendanceRole.OFFICER],
+        dilaQaids: buckets[AttendanceRole.DILA_QAID],
+        mulk: buckets[AttendanceRole.MULK],
+        guests: buckets[AttendanceRole.GUEST],
+      };
+    } catch (error: any) {
+      this.logger.error("Failed to fetch meeting breakdown", error.stack, {
+        error: error.message,
+      });
+      throw error;
+    }
+  }
+
+  async getMeetingStatsBreakdown(meetingId: string) {
+    try {
+      this.logger.info("Fetching meeting stats breakdown", { meetingId });
+
+      const meeting = await this.meetingRepository.findById(meetingId);
+      if (!meeting) {
+        throw new CustomError("Meeting not found", 404);
+      }
+
+      const records = await this.attendanceRepository.findByMeeting(meetingId);
+
+      const emptyCounts = () => ({
+        present: 0,
+        absent: 0,
+        late: 0,
+        excused: 0,
+        total: 0,
+      });
+
+      const byRole: Record<AttendanceRole, ReturnType<typeof emptyCounts>> = {
+        [AttendanceRole.OFFICER]: emptyCounts(),
+        [AttendanceRole.DILA_QAID]: emptyCounts(),
+        [AttendanceRole.MULK]: emptyCounts(),
+        [AttendanceRole.GUEST]: emptyCounts(),
+      };
+      const totals = emptyCounts();
+
+      for (const record of records) {
+        let role: AttendanceRole;
+        if (record.userType === UserType.GUEST) {
+          role = AttendanceRole.GUEST;
+        } else {
+          const officer = record.userId as unknown as IOfficer | null;
+          if (!officer) continue;
+          role = this.classifyOfficer(officer);
+        }
+
+        const key = record.status.toLowerCase() as keyof ReturnType<
+          typeof emptyCounts
+        >;
+        if (key in byRole[role]) {
+          byRole[role][key] += 1;
+          byRole[role].total += 1;
+          totals[key] += 1;
+          totals.total += 1;
+        }
+      }
+
+      return {
+        officers: byRole[AttendanceRole.OFFICER],
+        dilaQaids: byRole[AttendanceRole.DILA_QAID],
+        mulk: byRole[AttendanceRole.MULK],
+        guests: byRole[AttendanceRole.GUEST],
+        totals,
+      };
+    } catch (error: any) {
+      this.logger.error("Failed to fetch meeting stats breakdown", error.stack, {
         error: error.message,
       });
       throw error;

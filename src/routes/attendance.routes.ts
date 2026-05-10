@@ -5,6 +5,9 @@ import {
   CheckInByUniqueCodeDto,
   CheckInByFingerprintDto,
   MarkAbsentDto,
+  CheckInMulkByUniqueCodeDto,
+  CheckInMulkByFingerprintDto,
+  CheckInGuestDto,
 } from "../lib/types/DTOs";
 import { validateRequest } from "../middlewares/auth.middleware";
 
@@ -465,4 +468,183 @@ attendanceRouter.get(
 attendanceRouter.get(
   "/absent/three-months",
   attendanceController.getOfficersAbsentForThreeMonths
+);
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     CheckInMulkByUniqueCodeDto:
+ *       type: object
+ *       required: [meetingId, uniqueCode]
+ *       properties:
+ *         meetingId: { type: string, example: "507f1f77bcf86cd799439012" }
+ *         uniqueCode: { type: string, example: "MLK-XYZ123" }
+ *     CheckInMulkByFingerprintDto:
+ *       type: object
+ *       required: [meetingId, fingerprint]
+ *       properties:
+ *         meetingId: { type: string, example: "507f1f77bcf86cd799439012" }
+ *         fingerprint: { type: string, example: "base64_encoded_fingerprint_data" }
+ *     CheckInGuestDto:
+ *       type: object
+ *       required: [meetingId, firstName, lastName, email, phoneNumber, auxiliary, state, purpose]
+ *       properties:
+ *         meetingId: { type: string, example: "507f1f77bcf86cd799439012" }
+ *         firstName: { type: string, example: "Abdul" }
+ *         lastName: { type: string, example: "Qahar" }
+ *         email: { type: string, example: "guest@example.com" }
+ *         phoneNumber: { type: string, example: "+2348012345678" }
+ *         auxiliary: { type: string, enum: [KHUDDAM, ANSARULLAH, OTHERS], example: "KHUDDAM" }
+ *         state: { type: string, example: "Oyo" }
+ *         purpose: { type: string, example: "Observer" }
+ *     MeetingAttendanceBreakdown:
+ *       type: object
+ *       properties:
+ *         officers: { type: array, items: { $ref: '#/components/schemas/Attendance' } }
+ *         dilaQaids: { type: array, items: { $ref: '#/components/schemas/Attendance' } }
+ *         mulk: { type: array, items: { $ref: '#/components/schemas/Attendance' } }
+ *         guests: { type: array, items: { $ref: '#/components/schemas/Attendance' } }
+ *     RoleStats:
+ *       type: object
+ *       properties:
+ *         present: { type: integer }
+ *         absent: { type: integer }
+ *         late: { type: integer }
+ *         excused: { type: integer }
+ *         total: { type: integer }
+ *     MeetingStatsBreakdown:
+ *       type: object
+ *       properties:
+ *         officers: { $ref: '#/components/schemas/RoleStats' }
+ *         dilaQaids: { $ref: '#/components/schemas/RoleStats' }
+ *         mulk: { $ref: '#/components/schemas/RoleStats' }
+ *         guests: { $ref: '#/components/schemas/RoleStats' }
+ *         totals: { $ref: '#/components/schemas/RoleStats' }
+ */
+
+/**
+ * @swagger
+ * /attendance/checkin/mulk/unique-code:
+ *   post:
+ *     summary: Check in a mulk member using unique code
+ *     description: Same Officer record under the hood (Officer.isMulk = true). Rejects 400 if the code belongs to a non-mulk officer.
+ *     tags: [Attendance]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/CheckInMulkByUniqueCodeDto' }
+ *     responses:
+ *       201: { description: Mulk check-in successful }
+ *       400: { description: Already checked in OR code belongs to a non-mulk officer }
+ *       404: { description: Meeting not found OR no mulk member with this code }
+ */
+attendanceRouter.post(
+  "/checkin/mulk/unique-code",
+  validateRequest(CheckInMulkByUniqueCodeDto),
+  attendanceController.checkInMulkByUniqueCode
+);
+
+/**
+ * @swagger
+ * /attendance/checkin/mulk/fingerprint:
+ *   post:
+ *     summary: Check in a mulk member using fingerprint
+ *     tags: [Attendance]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/CheckInMulkByFingerprintDto' }
+ *     responses:
+ *       201: { description: Mulk check-in successful }
+ *       400: { description: Already checked in OR fingerprint belongs to a non-mulk officer }
+ *       404: { description: Meeting not found OR no mulk member with this fingerprint }
+ */
+attendanceRouter.post(
+  "/checkin/mulk/fingerprint",
+  validateRequest(CheckInMulkByFingerprintDto),
+  attendanceController.checkInMulkByFingerprint
+);
+
+/**
+ * @swagger
+ * /attendance/checkin/guest:
+ *   post:
+ *     summary: Walk-in guest check-in (creates the Guest record inline)
+ *     description: |
+ *       No pre-registration. The Guest record is created on first call (or reused if a guest with the same phoneNumber already exists).
+ *       Duplicate check-in for the same meeting is rejected.
+ *     tags: [Attendance]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/CheckInGuestDto' }
+ *     responses:
+ *       201: { description: Guest check-in successful }
+ *       400: { description: Guest already checked in for this meeting }
+ *       404: { description: Meeting not found }
+ */
+attendanceRouter.post(
+  "/checkin/guest",
+  validateRequest(CheckInGuestDto),
+  attendanceController.checkInGuest
+);
+
+/**
+ * @swagger
+ * /attendance/meeting/{meetingId}/breakdown:
+ *   get:
+ *     summary: Get attendance broken down by role (officers, Dila Qaids, mulk, guests)
+ *     tags: [Attendance]
+ *     parameters:
+ *       - in: path
+ *         name: meetingId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Per-role attendance lists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status: { type: string, example: success }
+ *                 data: { $ref: '#/components/schemas/MeetingAttendanceBreakdown' }
+ *       404: { description: Meeting not found }
+ */
+attendanceRouter.get(
+  "/meeting/:meetingId/breakdown",
+  attendanceController.getMeetingBreakdown
+);
+
+/**
+ * @swagger
+ * /attendance/meeting/{meetingId}/stats/breakdown:
+ *   get:
+ *     summary: Get attendance counts per role and per status
+ *     tags: [Attendance]
+ *     parameters:
+ *       - in: path
+ *         name: meetingId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Per-role status counts plus totals
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status: { type: string, example: success }
+ *                 data: { $ref: '#/components/schemas/MeetingStatsBreakdown' }
+ *       404: { description: Meeting not found }
+ */
+attendanceRouter.get(
+  "/meeting/:meetingId/stats/breakdown",
+  attendanceController.getMeetingStatsBreakdown
 );

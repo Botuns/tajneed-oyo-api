@@ -14,6 +14,7 @@ export interface IOfficer extends BaseEntity {
   offices: string[]; // References to Office IDs
   userType: UserType;
   isAdmin: boolean;
+  isMulk?: boolean;
   tenureStart: Date;
   tenureEnd?: Date;
 }

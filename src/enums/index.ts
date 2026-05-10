@@ -54,3 +54,16 @@ export enum PositionType {
   ASSISTANT = "ASSISTANT", // Naib Nazim (assistants/deputies)
   SPECIAL = "SPECIAL", // Muhasib, Murabiy, etc.
 }
+
+// Canonical position string used to identify a Dila Qaid officer.
+// Stored in Officer.position. Frontend MUST send this exact value
+// when creating a Dila Qaid officer.
+export const DILA_QAID_POSITION = "DILA_QAID";
+
+// Roles surfaced by the per-meeting breakdown endpoint.
+export enum AttendanceRole {
+  OFFICER = "OFFICER",     // Officer that is neither mulk nor Dila Qaid
+  DILA_QAID = "DILA_QAID", // Officer with position === DILA_QAID
+  MULK = "MULK",           // Officer with isMulk === true
+  GUEST = "GUEST",         // Walk-in guest
+}
