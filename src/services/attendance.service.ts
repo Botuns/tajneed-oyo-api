@@ -437,7 +437,9 @@ export class AttendanceService {
         throw new CustomError("Meeting not found", 404);
       }
 
-      const records = await this.attendanceRepository.findByMeeting(meetingId);
+      const records = await this.attendanceRepository.findByMeetingPopulated(
+        meetingId
+      );
 
       const buckets: RoleBuckets<IAttendance[]> = {
         [AttendanceRole.OFFICER]: [],
@@ -479,7 +481,9 @@ export class AttendanceService {
         throw new CustomError("Meeting not found", 404);
       }
 
-      const records = await this.attendanceRepository.findByMeeting(meetingId);
+      const records = await this.attendanceRepository.findByMeetingPopulated(
+        meetingId
+      );
 
       const emptyCounts = () => ({
         present: 0,

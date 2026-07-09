@@ -21,11 +21,12 @@ export class Middleware {
         origin: [
           "http://localhost:3000",
           "http://localhost:3001",
+          "http://localhost:3002",
           /\.vercel\.app$/,
         ],
         methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
         credentials: true,
-      })
+      }),
     );
     app.use(helmet());
     app.use(mongoSanitize());
@@ -61,7 +62,7 @@ export class Middleware {
   private static requestLogger(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): void {
     const start = Date.now();
     res.on("finish", () => {
@@ -85,7 +86,7 @@ export class Middleware {
     err: any,
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): void {
     Middleware.logger.error({
       error: err.message,
