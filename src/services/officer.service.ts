@@ -284,20 +284,35 @@ export class OfficerService {
     }
   }
 
+  // Attendance codes follow a fixed, human-friendly pattern (MKA-OYO-042) so
+  // that check-in only requires typing the trailing number. New officers get
+  // the next sequential number after the highest one already issued.
   private async generateUniqueCode(): Promise<string> {
-    let unique = false;
-    let code = "";
+    const PREFIX = "MKA-OYO-";
+    const PAD = 3;
 
-    while (!unique) {
-      code = `OYO${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    // Include soft-deleted officers so a retired number is never reused.
+    const officers = await this.officerRepository.findAll();
+    let maxSeq = 0;
+    for (const officer of officers) {
+      const match = officer.uniqueCode?.match(/^MKA-OYO-(\d+)$/i);
+      if (match) {
+        const seq = parseInt(match[1], 10);
+        if (seq > maxSeq) maxSeq = seq;
+      }
+    }
+
+    // Next sequential code, guarding against collisions just in case.
+    let next = maxSeq + 1;
+    for (;;) {
+      const code = `${PREFIX}${String(next).padStart(PAD, "0")}`;
       const existing = await this.officerRepository.findOne({
         uniqueCode: code,
       });
       if (!existing) {
-        unique = true;
+        return code;
       }
+      next++;
     }
-
-    return code;
   }
 }
